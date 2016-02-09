@@ -268,7 +268,7 @@ begin
   Guard.CheckNotNull(strings, 'strings');
   if container.Kernel.Registry.HasService(TypeInfo(TLoggingConfiguration)) then
     raise ERegistrationException.CreateRes(@SLogConfigurationAlreadyRegistered);
-  container.Kernel.Resolver.AddSubResolver(
+  container.Kernel.Resolver.AddResolver(
     TLoggerResolver.Create(container.Kernel));
 
   ini := TMemIniFile.Create('');

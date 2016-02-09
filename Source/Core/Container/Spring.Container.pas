@@ -242,10 +242,10 @@ begin
   fDecoratorResolver := TDecoratorResolver.Create;
   InitializeInspectors;
 
-  fResolver.AddSubResolver(TLazyResolver.Create(Self));
-  fResolver.AddSubResolver(TDynamicArrayResolver.Create(Self));
-  fResolver.AddSubResolver(TListResolver.Create(Self));
-  fResolver.AddSubResolver(TComponentOwnerResolver.Create(Self));
+  fResolver.AddResolver(TLazyResolver.Create(Self));
+  fResolver.AddResolver(TDynamicArrayResolver.Create(Self));
+  fResolver.AddResolver(TListResolver.Create(Self));
+  fResolver.AddResolver(TComponentOwnerResolver.Create(Self));
 end;
 
 destructor TContainer.Destroy;

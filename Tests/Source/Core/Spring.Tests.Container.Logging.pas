@@ -64,9 +64,9 @@ type
   {$ENDREGION}
 
 
-  {$REGION 'TTestLogSubResolverAndConfiguration'}
+  {$REGION 'TTestLogResolverAndConfiguration'}
 
-  TTestLogSubResolverAndConfiguration = class(TContainerTestCase)
+  TTestLogResolverAndConfiguration = class(TContainerTestCase)
   protected
     procedure SetUp; override;
   published
@@ -203,12 +203,12 @@ end;
 {$ENDREGION}
 
 
-{$REGION 'TTestLogSubResolverAndConfiguration'}
+{$REGION 'TTestLogResolverAndConfiguration'}
 
-procedure TTestLogSubResolverAndConfiguration.SetUp;
+procedure TTestLogResolverAndConfiguration.SetUp;
 begin
   inherited;
-  fContainer.Kernel.Resolver.AddSubResolver(
+  fContainer.Kernel.Resolver.AddResolver(
     TLoggerResolver.Create(fContainer.Kernel));
   fContainer.RegisterType<ILoggerController, TLoggerController>.AsSingleton;
   fContainer.RegisterType<TLoggingConfiguration>
@@ -220,7 +220,7 @@ begin
   fContainer.RegisterType<TLogger2>.AsSingleton.Implements<ILogger>('logging.logger2');
 end;
 
-procedure TTestLogSubResolverAndConfiguration.TestBaseClass;
+procedure TTestLogResolverAndConfiguration.TestBaseClass;
 var
   obj: TImpl;
 begin
@@ -234,7 +234,7 @@ begin
   CheckIs(obj.Logger2, TLogger2);
 end;
 
-procedure TTestLogSubResolverAndConfiguration.TestClass;
+procedure TTestLogResolverAndConfiguration.TestClass;
 var
   obj: TImpl;
 begin
@@ -248,7 +248,7 @@ begin
   CheckIs(obj.Logger2, TLogger2);
 end;
 
-procedure TTestLogSubResolverAndConfiguration.TestConstructor;
+procedure TTestLogResolverAndConfiguration.TestConstructor;
 var
   obj: TObjCtor;
 begin
@@ -261,7 +261,7 @@ begin
   CheckIs(obj.Logger, TLogger1);
 end;
 
-procedure TTestLogSubResolverAndConfiguration.TestInterface;
+procedure TTestLogResolverAndConfiguration.TestInterface;
 var
   intf: IService;
   obj: TImpl;
@@ -277,7 +277,7 @@ begin
   CheckIs(obj.Logger2, TLogger2);
 end;
 
-procedure TTestLogSubResolverAndConfiguration.TestLazy;
+procedure TTestLogResolverAndConfiguration.TestLazy;
 var
   obj: TObjLazy;
 begin
@@ -291,7 +291,7 @@ begin
   CheckIs(obj.Logger2.Value, TLogger2);
 end;
 
-procedure TTestLogSubResolverAndConfiguration.TestMethod;
+procedure TTestLogResolverAndConfiguration.TestMethod;
 var
   obj: TObjProc;
 begin
@@ -304,7 +304,7 @@ begin
   CheckIs(obj.Logger, TLogger1);
 end;
 
-procedure TTestLogSubResolverAndConfiguration.TestNoInject;
+procedure TTestLogResolverAndConfiguration.TestNoInject;
 var
   obj: TImpl;
 begin

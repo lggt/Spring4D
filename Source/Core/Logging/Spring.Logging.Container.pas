@@ -53,7 +53,7 @@ type
   {$REGION 'TLoggerResolver'}
 
   /// <summary>
-  ///   Subresolver that will inject proper logger defined by the
+  ///   Resolver that will inject proper logger defined by the
   ///   configuration. In order to use this resolver make sure to register <c>
   ///   TLoggingConfiguration</c>.
   ///   <para>
@@ -68,7 +68,7 @@ type
   ///     * Named injections will be ignored by this resolver.
   ///   </para>
   /// </summary>
-  TLoggerResolver = class(TSubDependencyResolverBase)
+  TLoggerResolver = class(TResolverBase)
   private
     {$IFDEF AUTOREFCOUNT}[Unsafe]{$ENDIF}
     fConfiguration: TLoggingConfiguration;
@@ -113,7 +113,7 @@ end;
 class procedure TLoggingContainerHelper.RegisterLoggingWithConfiguration(
   const container: TContainer);
 begin
-  container.Kernel.Resolver.AddSubResolver(
+  container.Kernel.Resolver.AddResolver(
     TLoggerResolver.Create(container.Kernel));
   container.RegisterType<TLoggingConfiguration>
     .Implements<TLoggingConfiguration>

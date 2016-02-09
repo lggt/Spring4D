@@ -36,7 +36,7 @@ uses
   Spring.Container.Core;
 
 type
-  TSubDependencyResolverBase = class abstract(TInterfacedObject, ISubDependencyResolver)
+  TResolverBase = class abstract(TInterfacedObject, IResolver)
   private
     fKernel: IKernel;
   protected
@@ -52,15 +52,15 @@ type
       const argument: TValue): TValue; virtual; abstract;
   end;
 
-  TDependencyResolver = class(TSubDependencyResolverBase, IDependencyResolver)
+  TDependencyResolver = class(TResolverBase, IDependencyResolver)
   private
-    fSubResolvers: IList<ISubDependencyResolver>;
+    fResolvers: IList<IResolver>;
   protected
     function CanResolveFromArgument(const context: ICreationContext;
       const dependency: TDependencyModel; const argument: TValue): Boolean;
     function CanResolveFromContext(const context: ICreationContext;
       const dependency: TDependencyModel; const argument: TValue): Boolean;
-    function CanResolveFromSubResolvers(const context: ICreationContext;
+    function CanResolveFromResolvers(const context: ICreationContext;
       const dependency: TDependencyModel; const argument: TValue): Boolean;
     function InternalResolveValue(const context: ICreationContext;
       const model: TComponentModel; const dependency: TDependencyModel;
@@ -82,11 +82,11 @@ type
       const dependencies: TArray<TDependencyModel>;
       const arguments: TArray<TValue>): TArray<TValue>; reintroduce; overload; virtual;
 
-    procedure AddSubResolver(const subResolver: ISubDependencyResolver);
-    procedure RemoveSubResolver(const subResolver: ISubDependencyResolver);
+    procedure AddResolver(const resolver: IResolver);
+    procedure RemoveResolver(const resolver: IResolver);
   end;
 
-  TLazyResolver = class(TSubDependencyResolverBase)
+  TLazyResolver = class(TResolverBase)
   private
     function InternalResolveClass(const context: ICreationContext;
       const dependency: TDependencyModel;
@@ -103,7 +103,7 @@ type
       const argument: TValue): TValue; override;
   end;
 
-  TDynamicArrayResolver = class(TSubDependencyResolverBase)
+  TDynamicArrayResolver = class(TResolverBase)
   public
     function CanResolve(const context: ICreationContext;
       const dependency: TDependencyModel;
@@ -113,7 +113,7 @@ type
       const argument: TValue): TValue; override;
   end;
 
-  TListResolver = class(TSubDependencyResolverBase)
+  TListResolver = class(TResolverBase)
   public
     function CanResolve(const context: ICreationContext;
       const dependency: TDependencyModel;
@@ -123,7 +123,7 @@ type
       const argument: TValue): TValue; override;
   end;
 
-  TComponentOwnerResolver = class(TSubDependencyResolverBase)
+  TComponentOwnerResolver = class(TResolverBase)
   private
     fVirtualIndex: SmallInt;
   public
@@ -171,9 +171,9 @@ uses
   Spring.Reflection;
 
 
-{$REGION 'TSubDependencyResolverBase'}
+{$REGION 'TResolverBase'}
 
-constructor TSubDependencyResolverBase.Create(const kernel: IKernel);
+constructor TResolverBase.Create(const kernel: IKernel);
 begin
 {$IFNDEF DISABLE_GUARD}
   Guard.CheckNotNull(kernel, 'kernel');
@@ -183,7 +183,7 @@ begin
   fKernel := kernel;
 end;
 
-function TSubDependencyResolverBase.CanResolve(const context: ICreationContext;
+function TResolverBase.CanResolve(const context: ICreationContext;
   const dependency: TDependencyModel; const argument: TValue): Boolean;
 begin
   if not argument.IsEmpty and argument.IsString then
@@ -202,19 +202,19 @@ end;
 constructor TDependencyResolver.Create(const kernel: IKernel);
 begin
   inherited Create(kernel);
-  fSubResolvers := TCollections.CreateInterfaceList<ISubDependencyResolver>;
+  fResolvers := TCollections.CreateInterfaceList<IResolver>;
 end;
 
-procedure TDependencyResolver.AddSubResolver(
-  const subResolver: ISubDependencyResolver);
+procedure TDependencyResolver.AddResolver(
+  const resolver: IResolver);
 begin
-  fSubResolvers.Add(subResolver);
+  fResolvers.Add(resolver);
 end;
 
-procedure TDependencyResolver.RemoveSubResolver(
-  const subResolver: ISubDependencyResolver);
+procedure TDependencyResolver.RemoveResolver(
+  const resolver: IResolver);
 begin
-  fSubResolvers.Remove(subResolver);
+  fResolvers.Remove(resolver);
 end;
 
 function TDependencyResolver.InternalResolveValue(
@@ -266,7 +266,7 @@ begin
   if CanResolveFromContext(context, dependency, argument) then
     Exit(True);
 
-  if CanResolveFromSubResolvers(context, dependency, argument) then
+  if CanResolveFromResolvers(context, dependency, argument) then
     Exit(True);
 
   if argument.IsEmpty then
@@ -305,9 +305,9 @@ begin
   if CanResolveFromContext(context, dependency, argument) then
     Exit(context.Resolve(context, dependency, argument));
 
-  for i := fSubResolvers.Count - 1 downto 0 do
-    if fSubResolvers[i].CanResolve(context, dependency, argument) then
-      Exit(fSubResolvers[i].Resolve(context, dependency, argument));
+  for i := fResolvers.Count - 1 downto 0 do
+    if fResolvers[i].CanResolve(context, dependency, argument) then
+      Exit(fResolvers[i].Resolve(context, dependency, argument));
 
   if CanResolveFromArgument(context, dependency, argument) then
     Exit(argument);
@@ -365,14 +365,14 @@ begin
     and context.CanResolve(context, dependency, argument);
 end;
 
-function TDependencyResolver.CanResolveFromSubResolvers(
+function TDependencyResolver.CanResolveFromResolvers(
   const context: ICreationContext; const dependency: TDependencyModel;
   const argument: TValue): Boolean;
 var
   i: Integer;
 begin
-  for i := fSubResolvers.Count - 1 downto 0 do
-    if fSubResolvers[i].CanResolve(context, dependency, argument) then
+  for i := fResolvers.Count - 1 downto 0 do
+    if fResolvers[i].CanResolve(context, dependency, argument) then
       Exit(True);
   Result := False;
 end;
