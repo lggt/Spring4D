@@ -394,7 +394,7 @@ begin
     and IsLazyType(target.TypeInfo);
   if Result then
   begin
-    targetType := GetLazyType(target.TargetType.Handle).RttiType;
+    targetType := GetLazyType(target.TypeInfo).RttiType;
     newTarget := TTarget.Create(targetType, target.Target);
     Result := Kernel.Resolver.CanResolve(context, newTarget, argument);
   end;
@@ -450,10 +450,10 @@ var
   hasEntered: Boolean;
 begin
   if not IsLazyType(target.TypeInfo) then
-    raise EResolveException.CreateResFmt(@SCannotResolveType, [target.Name]);
+    raise EResolveException.CreateResFmt(@SCannotResolveType, [target.TypeInfo.TypeName]);
 
   lazyKind := GetLazyKind(target.TypeInfo);
-  targetType := GetLazyType(target.TargetType.Handle).RttiType;
+  targetType := GetLazyType(target.TypeInfo).RttiType;
   newTarget := TTarget.Create(targetType, target.Target);
   if Kernel.Registry.HasService(targetType.Handle) then
   begin
@@ -472,7 +472,7 @@ begin
       tkInterface: Result := InternalResolveInterface(
         context, newTarget, argument, lazyKind);
     else
-      raise EResolveException.CreateResFmt(@SCannotResolveType, [target.Name]);
+      raise EResolveException.CreateResFmt(@SCannotResolveType, [target.TypeInfo.TypeName]);
     end;
     TValueData(Result).FTypeInfo := target.TypeInfo;
   finally
@@ -492,7 +492,7 @@ var
   targetType: TRttiType;
   newTarget: ITarget;
 begin
-  targetType := target.TargetType;
+  targetType := target.TypeInfo.RttiType;
   Result := inherited CanResolve(context, target, argument)
     and targetType.IsDynamicArray;
   if Result then
@@ -514,9 +514,9 @@ var
   i: Integer;
   serviceName: string;
 begin
-  targetType := target.TargetType;
+  targetType := target.TypeInfo.RttiType;
   if not targetType.IsDynamicArray then
-    raise EResolveException.CreateResFmt(@SCannotResolveType, [target.Name]);
+    raise EResolveException.CreateResFmt(@SCannotResolveType, [target.TypeInfo.TypeName]);
   targetType := targetType.AsDynamicArray.ElementType;
   newTarget := TTarget.Create(targetType, target.Target);
 
@@ -551,7 +551,7 @@ var
   method: TRttiMethod;
   newTarget: ITarget;
 begin
-  targetType := target.TargetType;
+  targetType := target.TypeInfo.RttiType;
   Result := inherited CanResolve(context, target, argument)
     and targetType.IsGenericType
     and MatchText(targetType.GetGenericTypeDefinition, SupportedTypes)
@@ -573,7 +573,7 @@ var
   newTarget: ITarget;
   values: TValue;
 begin
-  arrayType := target.TargetType.GetMethod('ToArray').ReturnType;
+  arrayType := target.TypeInfo.RttiType.GetMethod('ToArray').ReturnType;
   itemType := arrayType.AsDynamicArray.ElementType;
   newTarget := TTarget.Create(arrayType, target.Target);
   values := Kernel.Resolver.Resolve(context, newTarget, argument);
@@ -591,7 +591,7 @@ begin
         values.AsType<TArray<IInterface>>()));
     end;
   else
-    raise EResolveException.CreateResFmt(@SCannotResolveType, [target.Name]);
+    raise EResolveException.CreateResFmt(@SCannotResolveType, [target.TypeInfo.TypeName]);
   end;
   Result := Result.Cast(target.TypeInfo);
 end;
