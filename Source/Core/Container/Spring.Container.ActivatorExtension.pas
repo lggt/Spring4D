@@ -40,10 +40,9 @@ type
     procedure Initialize(const kernel: IKernel);
   end;
 
-  TActivatorInspector = class(TInspectorBase)
-  protected
-    procedure DoProcessModel(const kernel: IKernel;
-      const model: TComponentModel); override;
+  TActivatorInspector = class(TInterfacedObject, IBuilderInspector)
+  public
+    procedure ProcessModel(const kernel: IKernel; const model: TComponentModel);
   end;
 
   TReflectionComponentActivator2 = class(TReflectionComponentActivator)
@@ -75,7 +74,7 @@ end;
 
 {$REGION 'TActivatorInspector'}
 
-procedure TActivatorInspector.DoProcessModel(const kernel: IKernel;
+procedure TActivatorInspector.ProcessModel(const kernel: IKernel;
   const model: TComponentModel);
 begin
   if not Assigned(model.ActivatorDelegate) then
