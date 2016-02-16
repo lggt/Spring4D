@@ -272,8 +272,7 @@ end;
 procedure TContainer.AddExtension(const extension: IContainerExtension);
 begin
   fExtensions.Add(extension);
-  extension.InitializeExtension(Self);
-  extension.Initialize;
+  extension.Initialize(Self);
 end;
 
 procedure TContainer.AddExtension<T>;

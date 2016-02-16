@@ -126,8 +126,7 @@ type
   /// </summary>
   IContainerExtension = interface
     ['{E78748FB-D75C-447C-B984-9782A8F26C20}']
-    procedure Initialize;
-    procedure InitializeExtension(const kernel: IKernel);
+    procedure Initialize(const kernel: IKernel);
   end;
 
   /// <summary>
