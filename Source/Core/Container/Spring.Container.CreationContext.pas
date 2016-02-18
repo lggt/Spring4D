@@ -52,10 +52,8 @@ type
     destructor Destroy; override;
 {$ENDIF}
 
-    function CanResolve(const context: ICreationContext;
-      const target: ITarget; const argument: TValue): Boolean;
-    function Resolve(const context: ICreationContext;
-      const target: ITarget; const argument: TValue): TValue;
+    function CanResolve(const request: IRequest): Boolean;
+    function Resolve(const request: IRequest): TValue;
 
     function EnterResolution(const model: TComponentModel;
       out instance: TValue): Boolean;
@@ -148,15 +146,14 @@ begin
   end;
 end;
 
-function TCreationContext.CanResolve(const context: ICreationContext;
-  const target: ITarget; const argument: TValue): Boolean;
+function TCreationContext.CanResolve(const request: IRequest): Boolean;
 var
   i: Integer;
 begin
   fLock.BeginRead;
   try
     for i := fTypedArguments.Count - 1 downto 0 do // check most recently added first
-      if fTypedArguments[i].TypeInfo = target.TypeInfo then
+      if fTypedArguments[i].TypeInfo = request.Service then
         Exit(True);
     Result := False;
   finally
@@ -270,20 +267,19 @@ begin
   end;
 end;
 
-function TCreationContext.Resolve(const context: ICreationContext;
-  const target: ITarget; const argument: TValue): TValue;
+function TCreationContext.Resolve(const request: IRequest): TValue;
 var
   i: Integer;
 begin
   fLock.BeginRead;
   try
     for i := fTypedArguments.Count - 1 downto 0 do
-      if fTypedArguments[i].TypeInfo = target.TypeInfo then
+      if fTypedArguments[i].TypeInfo = request.Service then
         Exit(fTypedArguments[i].Value);
   finally
     fLock.EndRead;
   end;
-  raise EResolveException.CreateResFmt(@SCannotResolveType, [target.TypeInfo.TypeName]);
+  raise EResolveException.CreateResFmt(@SCannotResolveType, [request.Service.TypeName]);
 end;
 
 {$ENDREGION}

@@ -54,6 +54,7 @@ type
   IComponentActivator = interface;
   IContainerExtension = interface;
   ICreationContext = interface;
+  IRequest = interface;
   IProxyFactory = interface;
 
   TActivatorDelegate<T> = reference to function: T;
@@ -173,8 +174,8 @@ type
       const decoratorModel: TComponentModel;
       const condition: Predicate<TComponentModel>);
 
-    function Resolve(const target: ITarget; const model: TComponentModel;
-      const context: ICreationContext; const decoratee: TValue): TValue;
+    function Resolve(const request: IRequest;
+      const model: TComponentModel; const decoratee: TValue): TValue;
   end;
 
   /// <summary>
@@ -277,12 +278,38 @@ type
       const fieldName: string; const value: TValue): IInjection; overload;
   end;
 
+  IRequest = interface
+    ['{ACEB84B5-1E9B-465E-ADEF-3EE82C15D6F1}']
+    function GetService: PTypeInfo;
+    function GetContext: ICreationContext;
+    function GetTarget: ITarget;
+    function GetParameter: TValue;
+
+    property Service: PTypeInfo read GetService;
+    property Context: ICreationContext read GetContext;
+    property Target: ITarget read GetTarget;
+    property Parameter: TValue read GetParameter;
+  end;
+
+  TRequest = class(TInterfacedObject, IRequest)
+  private
+    fService: PTypeInfo;
+    fContext: ICreationContext;
+    fTarget: ITarget;
+    fParameter: TValue;
+    function GetService: PTypeInfo;
+    function GetContext: ICreationContext;
+    function GetTarget: ITarget;
+    function GetParameter: TValue;
+  public
+    constructor Create(service: PTypeInfo; const context: ICreationContext;
+      const target: ITarget; const parameter: TValue);
+  end;
+
   IResolver = interface
     ['{E360FFAD-2235-49D1-9A4F-50945877E337}']
-    function CanResolve(const context: ICreationContext;
-      const target: ITarget; const argument: TValue): Boolean;
-    function Resolve(const context: ICreationContext;
-      const target: ITarget; const argument: TValue): TValue;
+    function CanResolve(const request: IRequest): Boolean;
+    function Resolve(const request: IRequest): TValue;
   end;
 
   /// <summary>
@@ -306,10 +333,8 @@ type
 
   IDependencyResolver = interface
     ['{15ADEA1D-7C3F-48D5-8E85-84B4332AFF5F}']
-    function CanResolve(const context: ICreationContext;
-      const target: ITarget; const argument: TValue): Boolean; overload;
-    function Resolve(const context: ICreationContext;
-      const target: ITarget; const argument: TValue): TValue; overload;
+    function CanResolve(const request: IRequest): Boolean; overload;
+    function Resolve(const request: IRequest): TValue; overload;
 
     function CanResolve(const context: ICreationContext;
       const dependencies: TArray<ITarget>;
@@ -347,8 +372,7 @@ type
     ['{4813914F-810D-451D-8AED-205C3F82C068}']
     procedure AddInterceptorSelector(const selector: IModelInterceptorsSelector);
 
-    function CreateInstance(const context: ICreationContext;
-      const instance: TValue; const model: TComponentModel;
+    function CreateInstance(const instance: TValue; const model: TComponentModel;
       const constructorArguments: array of TValue): TValue;
   end;
 
@@ -736,6 +760,41 @@ class function TInjectionFilters.IsInjectableMethod(const kernel: IKernel;
   const arguments: TArray<TValue>): Specification<TRttiMethod>;
 begin
   Result := TInjectableMethodFilter.Create(kernel, model, arguments);
+end;
+
+{$ENDREGION}
+
+
+{$REGION 'TRequest'}
+
+constructor TRequest.Create(service: PTypeInfo; const context: ICreationContext;
+  const target: ITarget; const parameter: TValue);
+begin
+  inherited Create;
+  fService := service;
+  fContext := context;
+  fTarget := target;
+  fParameter := parameter;
+end;
+
+function TRequest.GetContext: ICreationContext;
+begin
+  Result := fContext;
+end;
+
+function TRequest.GetParameter: TValue;
+begin
+  Result := fParameter;
+end;
+
+function TRequest.GetService: PTypeInfo;
+begin
+  Result := fService;
+end;
+
+function TRequest.GetTarget: ITarget;
+begin
+  Result := fTarget
 end;
 
 {$ENDREGION}

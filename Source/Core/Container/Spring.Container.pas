@@ -483,14 +483,13 @@ function TContainer.Resolve(serviceType: PTypeInfo;
 var
   componentModel: TComponentModel;
   context: ICreationContext;
-  targetType: TRttiType;
+  request: IRequest;
 begin
   CheckBuildRequired;
   componentModel := fRegistry.FindDefault(serviceType);
   context := TCreationContext.Create(componentModel, arguments);
-  targetType := serviceType.RttiType;
-  Result := fResolver.Resolve(
-    context, TTarget.Create(targetType, nil) as ITarget , nil);
+  request := TRequest.Create(serviceType, context, nil, nil);
+  Result := fResolver.Resolve(request);
 end;
 
 function TContainer.Resolve(const serviceName: string): TValue;
@@ -504,7 +503,7 @@ var
   componentModel: TComponentModel;
   context: ICreationContext;
   serviceType: PTypeInfo;
-  targetType: TRttiType;
+  request: IRequest;
 begin
   CheckBuildRequired;
   componentModel := fRegistry.FindOne(serviceName);
@@ -512,9 +511,8 @@ begin
     raise EResolveException.CreateResFmt(@SServiceNotFound, [serviceName]);
   context := TCreationContext.Create(componentModel, arguments);
   serviceType := componentModel.GetServiceType(serviceName);
-  targetType := serviceType.RttiType;
-  Result := fResolver.Resolve(
-    context, TTarget.Create(targetType, nil) as ITarget, serviceName);
+  request := TRequest.Create(serviceType, context, nil, serviceName);
+  Result := fResolver.Resolve(request);
 end;
 
 function TContainer.ResolveAll<TServiceType>: TArray<TServiceType>;
@@ -535,6 +533,7 @@ var
   i: Integer;
   context: ICreationContext;
   serviceName: string;
+  request: IRequest;
 begin
   CheckBuildRequired;
   targetType := serviceType.RttiType;
@@ -547,8 +546,8 @@ begin
   begin
     context := TCreationContext.Create(models[i], []);
     serviceName := models[i].GetServiceName(serviceType);
-    Result[i] := fResolver.Resolve(
-      context, TTarget.Create(targetType, nil) as ITarget, serviceName);
+    request := TRequest.Create(targetType.Handle, context, nil, serviceName);
+    Result[i] := fResolver.Resolve(request);
   end;
 end;
 
