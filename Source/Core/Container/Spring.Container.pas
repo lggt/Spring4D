@@ -53,6 +53,7 @@ type
     fProxyFactory: IProxyFactory;
     fExtensions: IList<IContainerExtension>;
     fLogger: ILogger;
+    fConstructorSelector: IConstructorSelector;
     fChangedModels: ISet<TComponentModel>;
     fDecoratorResolver: IDecoratorResolver;
     procedure CheckBuildRequired;
@@ -73,8 +74,10 @@ type
     function GetResolver: IDependencyResolver; inline;
     function GetLogger: ILogger; inline;
     function GetProxyFactory: IProxyFactory; inline;
-    procedure SetLogger(const logger: ILogger);
+    function GetConstructorSelector: IConstructorSelector; inline;
     function GetDecoratorResolver: IDecoratorResolver; inline;
+    procedure SetLogger(const logger: ILogger);
+    procedure SetConstructorSelector(const selector: IConstructorSelector);
   {$ENDREGION}
     procedure InitializeInspectors; virtual;
     property Builder: IComponentBuilder read GetBuilder;
@@ -238,6 +241,7 @@ begin
   fRegistrationManager := TRegistrationManager.Create(Self);
   fResolver := TDependencyResolver.Create(Self);
   fProxyFactory := TProxyFactory.Create(Self);
+  fConstructorSelector := TConstructorSelector.Create(Self);
   fExtensions := TCollections.CreateInterfaceList<IContainerExtension>;
   fDecoratorResolver := TDecoratorResolver.Create;
   InitializeInspectors;
@@ -348,6 +352,11 @@ end;
 function TContainer.GetResolver: IDependencyResolver;
 begin
   Result := fResolver;
+end;
+
+function TContainer.GetConstructorSelector: IConstructorSelector;
+begin
+  Result := fConstructorSelector;
 end;
 
 procedure TContainer.HandleBuild(Sender: TObject; const model: TComponentModel);
@@ -577,6 +586,11 @@ begin
     fLogger := logger
   else
     fLogger := TNullLogger.GlobalInstance;
+end;
+
+procedure TContainer.SetConstructorSelector(const selector: IConstructorSelector);
+begin
+  fConstructorSelector := selector;
 end;
 
 {$ENDREGION}

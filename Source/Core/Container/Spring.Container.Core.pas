@@ -84,6 +84,12 @@ type
       const target: TRttiNamedObject);
   end;
 
+  IConstructorSelector = interface
+    ['{E8C15B1F-EF8F-4167-8C9E-2BD0BB3E0BE1}']
+    function Find(const context: ICreationContext;
+      const model: TComponentModel): IInjection;
+  end;
+
   /// <summary>
   ///   The <c>IKernel</c> interface exposes all the functionality the
   ///   container implements.
@@ -97,8 +103,10 @@ type
     function GetResolver: IDependencyResolver;
     function GetProxyFactory: IProxyFactory;
     function GetLogger: ILogger;
-    procedure SetLogger(const logger: ILogger);
+    function GetConstructorSelector: IConstructorSelector;
     function GetDecoratorResolver: IDecoratorResolver;
+    procedure SetLogger(const logger: ILogger);
+    procedure SetConstructorSelector(const selector: IConstructorSelector);
   {$ENDREGION}
     procedure AddExtension(const extension: IContainerExtension);
 
@@ -108,6 +116,7 @@ type
     property Resolver: IDependencyResolver read GetResolver;
     property ProxyFactory: IProxyFactory read GetProxyFactory;
     property Logger: ILogger read GetLogger write SetLogger;
+    property ConstructorSelector: IConstructorSelector read GetConstructorSelector write SetConstructorSelector;
     property DecoratorResolver: IDecoratorResolver read GetDecoratorResolver;
   end;
 
