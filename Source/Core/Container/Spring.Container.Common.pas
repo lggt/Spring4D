@@ -389,7 +389,7 @@ type
 
 
   {$REGION 'Common Container Interfaces'}
-  TActivatorDelegate = reference to function: TValue;
+  TProviderDelegate = reference to function: TValue;
 
   TWhere = (First, Last);
 
@@ -398,7 +398,7 @@ type
     function Implements(serviceType: PTypeInfo): IRegistration; overload;
     function Implements(serviceType: PTypeInfo; const serviceName: string): IRegistration; overload;
 
-    function DelegateTo(const delegate: TActivatorDelegate): IRegistration; overload;
+    function DelegateTo(const delegate: TProviderDelegate): IRegistration; overload;
 
     {$REGION 'Typed Injections'}
 

@@ -99,7 +99,7 @@ type
     function Implements(serviceType: PTypeInfo): IRegistration; overload;
     function Implements(serviceType: PTypeInfo; const serviceName: string): IRegistration; overload;
 
-    function DelegateTo(const delegate: TActivatorDelegate): IRegistration; overload;
+    function DelegateTo(const delegate: TProviderDelegate): IRegistration; overload;
 
     {$REGION 'Typed Injections'}
 
@@ -157,7 +157,7 @@ type
     function Implements<TServiceType>: TRegistration<T>; overload;
     function Implements<TServiceType>(const serviceName: string): TRegistration<T>; overload;
 
-    function DelegateTo(const delegate: TActivatorDelegate<T>): TRegistration<T>; overload;
+    function DelegateTo(const delegate: TProviderDelegate<T>): TRegistration<T>; overload;
 
   {$REGION 'Typed Injections'}
 
@@ -233,7 +233,7 @@ uses
   TypInfo,
   Spring.Collections.Events,
   Spring.Collections.Lists,
-  Spring.Container.ComponentActivator,
+  Spring.Container.Providers,
   Spring.Container.Resolvers,
   Spring.Container.ResourceStrings,
   Spring.Reflection;
@@ -399,8 +399,8 @@ begin
     if maxVirtualIndex < method.VirtualIndex then
       maxVirtualIndex := method.VirtualIndex;
 
-  model.ComponentActivator :=
-    TDelegateComponentActivator.Create(fKernel, model,
+  model.Provider :=
+    TDelegateProvider.Create(fKernel, model,
       function: TValue
       var
         factory: TVirtualInterface;
@@ -619,10 +619,9 @@ begin
   Result := Self;
 end;
 
-function TRegistration.DelegateTo(const delegate: TActivatorDelegate): IRegistration;
+function TRegistration.DelegateTo(const delegate: TProviderDelegate): IRegistration;
 begin
-  fModel.ComponentActivator := TDelegateComponentActivator.Create(
-    fKernel, fModel, delegate);
+  fModel.Provider := TDelegateProvider.Create(fKernel, fModel, delegate);
   Result := Self;
 end;
 
@@ -823,7 +822,7 @@ begin
 end;
 
 function TRegistration<T>.DelegateTo(
-  const delegate: TActivatorDelegate<T>): TRegistration<T>;
+  const delegate: TProviderDelegate<T>): TRegistration<T>;
 begin
   fRegistration.DelegateTo(
     function: TValue

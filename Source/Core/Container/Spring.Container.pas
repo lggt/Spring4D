@@ -191,9 +191,9 @@ uses
   TypInfo,
   Spring.Container.Builder,
   Spring.Container.CreationContext,
-  Spring.Container.ComponentActivator,
   Spring.Container.Injection,
   Spring.Container.LifetimeManager,
+  Spring.Container.Providers,
   Spring.Container.ProxyFactory,
   Spring.Container.Resolvers,
   Spring.Container.ResourceStrings,
@@ -296,7 +296,7 @@ var
 begin
   inspectors := TArray<IBuilderInspector>.Create(
     TInterfaceInspector.Create,
-    TComponentActivatorInspector.Create,
+    TProviderInspector.Create,
     TLifetimeInspector.Create,
     TInjectionTargetInspector.Create,
     TConstructorInspector.Create,
