@@ -203,7 +203,7 @@ begin
 {$IFDEF MSWINDOWS}
   EnterCriticalSection(fLock);
 {$ELSE}
-  TMonitor.Enter(Self);
+  MonitorEnter(Self);
 {$ENDIF}
 end;
 
@@ -212,7 +212,7 @@ begin
 {$IFDEF MSWINDOWS}
   LeaveCriticalSection(fLock);
 {$ELSE}
-  TMonitor.Exit(Self);
+  MonitorExit(Self);
 {$ENDIF}
 end;
 
