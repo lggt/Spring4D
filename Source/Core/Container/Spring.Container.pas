@@ -193,7 +193,7 @@ implementation
 uses
   TypInfo,
   Spring.Container.Builder,
-  Spring.Container.CreationContext,
+  Spring.Container.Context,
   Spring.Container.Injection,
   Spring.Container.LifetimeManager,
   Spring.Container.Providers,
@@ -491,12 +491,12 @@ function TContainer.Resolve(serviceType: PTypeInfo;
   const arguments: array of TValue): TValue;
 var
   componentModel: TComponentModel;
-  context: ICreationContext;
+  context: IContext;
   request: IRequest;
 begin
   CheckBuildRequired;
   componentModel := fRegistry.FindDefault(serviceType);
-  context := TCreationContext.Create(componentModel, arguments);
+  context := TContext.Create(componentModel, arguments);
   request := TRequest.Create(serviceType, context, nil, nil);
   Result := fResolver.Resolve(request);
 end;
@@ -510,7 +510,7 @@ function TContainer.Resolve(const serviceName: string;
   const arguments: array of TValue): TValue;
 var
   componentModel: TComponentModel;
-  context: ICreationContext;
+  context: IContext;
   serviceType: PTypeInfo;
   request: IRequest;
 begin
@@ -518,7 +518,7 @@ begin
   componentModel := fRegistry.FindOne(serviceName);
   if not Assigned(componentModel) then
     raise EResolveException.CreateResFmt(@SServiceNotFound, [serviceName]);
-  context := TCreationContext.Create(componentModel, arguments);
+  context := TContext.Create(componentModel, arguments);
   serviceType := componentModel.GetServiceType(serviceName);
   request := TRequest.Create(serviceType, context, nil, serviceName);
   Result := fResolver.Resolve(request);
@@ -540,7 +540,7 @@ var
   targetType: TRttiType;
   models: TArray<TComponentModel>;
   i: Integer;
-  context: ICreationContext;
+  context: IContext;
   serviceName: string;
   request: IRequest;
 begin
@@ -553,7 +553,7 @@ begin
   SetLength(Result, Length(models));
   for i := Low(models) to High(models) do
   begin
-    context := TCreationContext.Create(models[i], []);
+    context := TContext.Create(models[i], []);
     serviceName := models[i].GetServiceName(serviceType);
     request := TRequest.Create(targetType.Handle, context, nil, serviceName);
     Result[i] := fResolver.Resolve(request);

@@ -44,25 +44,25 @@ type
     {$IFDEF AUTOREFCOUNT}[Unsafe]{$ENDIF}
     fModel: TComponentModel;
   protected
-    procedure ExecuteInjections(var instance: TValue; const context: ICreationContext); overload;
+    procedure ExecuteInjections(var instance: TValue; const context: IContext); overload;
     procedure ExecuteInjections(const instance: TValue;
-      const injections: IList<IInjection>; const context: ICreationContext); overload;
+      const injections: IList<IInjection>; const context: IContext); overload;
     property Kernel: IKernel read fKernel;
     property Model: TComponentModel read fModel;
   public
     constructor Create(const kernel: IKernel; const model: TComponentModel);
-    function CreateInstance(const context: ICreationContext): TValue; overload; virtual; abstract;
+    function CreateInstance(const context: IContext): TValue; overload; virtual; abstract;
   end;
 
   TConstructorSelector = class(TInterfacedObject, IConstructorSelector)
   private
     fKernel: IKernel;
-    function TryHandle(const context: ICreationContext;
+    function TryHandle(const context: IContext;
       const candidate: IInjection; var winner: IInjection): Boolean;
     property Kernel: IKernel read fKernel;
   public
     constructor Create(const kernel: IKernel);
-    function Find(const context: ICreationContext;
+    function Find(const context: IContext;
       const model: TComponentModel): IInjection;
   end;
 
@@ -71,7 +71,7 @@ type
   /// </summary>
   TReflectionProvider = class(TProviderBase)
   public
-    function CreateInstance(const context: ICreationContext): TValue; override;
+    function CreateInstance(const context: IContext): TValue; override;
   end;
 
   /// <summary>
@@ -83,7 +83,7 @@ type
   public
     constructor Create(const kernel: IKernel; const model: TComponentModel;
       const delegate: TProviderDelegate);
-    function CreateInstance(const context: ICreationContext): TValue; override;
+    function CreateInstance(const context: IContext): TValue; override;
   end;
 
 implementation
@@ -109,7 +109,7 @@ begin
 end;
 
 procedure TProviderBase.ExecuteInjections(var instance: TValue;
-  const context: ICreationContext);
+  const context: IContext);
 begin
   if Model.LifetimeType in [TLifetimeType.Singleton, TLifetimeType.PerResolve,
     TLifetimeType.SingletonPerThread] then
@@ -138,7 +138,7 @@ begin
 end;
 
 procedure TProviderBase.ExecuteInjections(const instance: TValue;
-  const injections: IList<IInjection>; const context: ICreationContext);
+  const injections: IList<IInjection>; const context: IContext);
 var
   injection: IInjection;
   arguments: TArray<TValue>;
@@ -162,7 +162,7 @@ begin
   fKernel := kernel;
 end;
 
-function TConstructorSelector.Find(const context: ICreationContext;
+function TConstructorSelector.Find(const context: IContext;
   const model: TComponentModel): IInjection;
 var
   candidate, winner: IInjection;
@@ -171,7 +171,7 @@ begin
   winner := nil;
   maxCount := -1;
 
-  for candidate in Model.ConstructorInjections do
+  for candidate in model.ConstructorInjections do
   begin
     if candidate.Target.HasCustomAttribute<InjectAttribute> then
     begin
@@ -185,7 +185,7 @@ begin
   Result := winner;
 end;
 
-function TConstructorSelector.TryHandle(const context: ICreationContext;
+function TConstructorSelector.TryHandle(const context: IContext;
   const candidate: IInjection; var winner: IInjection): Boolean;
 var
   injection: IInjection;
@@ -203,7 +203,7 @@ end;
 {$REGION 'TReflectionProvider'}
 
 function TReflectionProvider.CreateInstance(
-  const context: ICreationContext): TValue;
+  const context: IContext): TValue;
 var
   injection: IInjection;
   arguments: TArray<TValue>;
@@ -231,7 +231,7 @@ begin
 end;
 
 function TDelegateProvider.CreateInstance(
-  const context: ICreationContext): TValue;
+  const context: IContext): TValue;
 begin
   Result := fDelegate();
   ExecuteInjections(Result, context);

@@ -63,12 +63,12 @@ type
     constructor Create(const kernel: IKernel);
 
     function CanResolve(const request: IRequest): Boolean; overload;
-    function CanResolve(const context: ICreationContext;
+    function CanResolve(const context: IContext;
       const targets: TArray<ITarget>;
       const arguments: TArray<TValue>): Boolean; overload;
 
     function Resolve(const request: IRequest): TValue; overload;
-    function Resolve(const context: ICreationContext;
+    function Resolve(const context: IContext;
       const targets: TArray<ITarget>;
       const arguments: TArray<TValue>): TArray<TValue>; overload;
 
@@ -137,7 +137,7 @@ uses
   StrUtils,
   TypInfo,
   Spring.Collections.Lists,
-  Spring.Container.CreationContext,
+  Spring.Container.Context,
   Spring.Container.ResourceStrings,
   Spring.Reflection;
 
@@ -295,7 +295,7 @@ begin
   Result := Kernel.DecoratorResolver.Resolve(request, componentModel, Result);
 end;
 
-function TDependencyResolver.CanResolve(const context: ICreationContext;
+function TDependencyResolver.CanResolve(const context: IContext;
   const targets: TArray<ITarget>; const arguments: TArray<TValue>): Boolean;
 var
   i: Integer;
@@ -354,7 +354,7 @@ begin
   Result := False;
 end;
 
-function TDependencyResolver.Resolve(const context: ICreationContext;
+function TDependencyResolver.Resolve(const context: IContext;
   const targets: TArray<ITarget>; const arguments: TArray<TValue>): TArray<TValue>;
 var
   hasArgument: Boolean;

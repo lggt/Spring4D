@@ -24,7 +24,7 @@
 
 {$I Spring.inc}
 
-unit Spring.Container.CreationContext;
+unit Spring.Container.Context;
 
 interface
 
@@ -36,7 +36,7 @@ uses
   Spring.Container.Core;
 
 type
-  TCreationContext = class(TInterfacedObject, ICreationContext)
+  TContext = class(TInterfacedObject, IContext)
   private
     fResolutionStack: IStack<TComponentModel>;
     fModel: TComponentModel;
@@ -80,9 +80,9 @@ type
   TInterfacedObjectAccess = class(TInterfacedObject);
 {$ENDIF}
 
-{$REGION 'TCreationContext'}
+{$REGION 'TContext'}
 
-constructor TCreationContext.Create(const model: TComponentModel;
+constructor TContext.Create(const model: TComponentModel;
   const arguments: array of TValue);
 var
   i: Integer;
@@ -100,7 +100,7 @@ begin
 end;
 
 {$IFNDEF AUTOREFCOUNT}
-destructor TCreationContext.Destroy;
+destructor TContext.Destroy;
 var
   instance: TValue;
   interfacedObject: TInterfacedObject;
@@ -112,7 +112,7 @@ begin
 end;
 {$ENDIF}
 
-function TCreationContext.AddArgument(const argument: TValue): Integer;
+function TContext.AddArgument(const argument: TValue): Integer;
 begin
   fLock.BeginWrite;
   try
@@ -127,7 +127,7 @@ begin
   end;
 end;
 
-procedure TCreationContext.AddPerResolve(const model: TComponentModel;
+procedure TContext.AddPerResolve(const model: TComponentModel;
   const instance: TValue);
 {$IFNDEF AUTOREFCOUNT}
 var
@@ -146,7 +146,7 @@ begin
   end;
 end;
 
-function TCreationContext.CanResolve(const request: IRequest): Boolean;
+function TContext.CanResolve(const request: IRequest): Boolean;
 var
   i: Integer;
 begin
@@ -161,7 +161,7 @@ begin
   end;
 end;
 
-function TCreationContext.TryHandle(const injection: IInjection;
+function TContext.TryHandle(const injection: IInjection;
   out handled: IInjection): Boolean;
 var
   arguments: TArray<TValue>;
@@ -222,7 +222,7 @@ begin
     handled.Dependencies[i] := injection.Dependencies[i];
 end;
 
-function TCreationContext.EnterResolution(const model: TComponentModel;
+function TContext.EnterResolution(const model: TComponentModel;
   out instance: TValue): Boolean;
 begin
   Result := False;
@@ -247,7 +247,7 @@ begin
   end;
 end;
 
-procedure TCreationContext.LeaveResolution(const model: TComponentModel);
+procedure TContext.LeaveResolution(const model: TComponentModel);
 begin
   try
     if fResolutionStack.Pop <> model then
@@ -257,7 +257,7 @@ begin
   end;
 end;
 
-procedure TCreationContext.RemoveTypedArgument(index: Integer);
+procedure TContext.RemoveTypedArgument(index: Integer);
 begin
   fLock.BeginWrite;
   try
@@ -267,7 +267,7 @@ begin
   end;
 end;
 
-function TCreationContext.Resolve(const request: IRequest): TValue;
+function TContext.Resolve(const request: IRequest): TValue;
 var
   i: Integer;
 begin
