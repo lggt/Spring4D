@@ -132,15 +132,6 @@ type
     function ResolveAll<TServiceType>: TArray<TServiceType>; overload;
     function ResolveAll(serviceType: PTypeInfo): TArray<TValue>; overload;
 
-{$IFNDEF AUTOREFCOUNT}
-    { Experimental Release Methods }
-    procedure Release(instance: TObject); overload;
-    procedure Release(instance: IInterface); overload;
-{$ELSE}
-    // Dangerous since the instance should be cleared by this function but
-    // passing as var is not possible here
-{$ENDIF}
-
     property Kernel: IKernel read GetKernel;
     property Logger: ILogger read GetLogger write SetLogger;
   end;
@@ -225,6 +216,7 @@ end;
 procedure TContainer.CheckBuildRequired;
 begin
   if fChangedModels.Any then
+    // TODO just call Build instead of exception?
     raise EContainerException.CreateRes(@SContainerRequiresBuild);
 end;
 
@@ -559,26 +551,6 @@ begin
     Result[i] := fResolver.Resolve(request);
   end;
 end;
-
-{$IFNDEF AUTOREFCOUNT}
-procedure TContainer.Release(instance: TObject);
-var
-  model: TComponentModel;
-begin
-  Guard.CheckNotNull(instance, 'instance');
-
-  model := fRegistry.FindOne(instance.ClassInfo);
-  if model = nil then
-    raise EContainerException.CreateResFmt(@STypeNotFound, [instance.ClassName]);
-  model.LifetimeManager.Release(instance);
-end;
-
-procedure TContainer.Release(instance: IInterface);
-begin
-  Guard.CheckNotNull(instance, 'instance');
-  {TODO -oOwner -cGeneral : Release instance of IInterface }
-end;
-{$ENDIF}
 
 procedure TContainer.SetLogger(const logger: ILogger);
 begin

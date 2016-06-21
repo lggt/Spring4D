@@ -520,9 +520,6 @@ begin
     CheckTrue(service is TNameService, 'service should be a TNameService instance.');
     CheckEquals(TNameService.NameString, service.Name);
   finally
-{$IFNDEF AUTOREFCOUNT}
-    fContainer.Release(service);
-{$ENDIF}
     service := nil;
   end;
 end;
@@ -545,11 +542,7 @@ begin
     CheckIs(service, TAgeServiceImpl, 'service should be a TNameService instance.');
     CheckEquals(TAgeServiceImpl.DefaultAge, service.Age);
   finally
-{$IFNDEF AUTOREFCOUNT}
-    fContainer.Release(service);
-{$ELSE}
-    service := nil;
-{$ENDIF}
+    service.Free;
   end;
 end;
 
@@ -564,11 +557,7 @@ begin
     CheckNotNull(service, 'service should not be null.');
     CheckEquals(TAgeServiceImpl.DefaultAge, service.Age);
   finally
-{$IFNDEF AUTOREFCOUNT}
-    fContainer.Release(service);
-{$ELSE}
-    service := nil;
-{$ENDIF}
+    service.Free;
   end;
 end;
 
@@ -588,11 +577,7 @@ begin
     CheckNotNull(component.AgeService, 'AgeService');
     CheckEquals(TAgeServiceImpl.DefaultAge, component.AgeService.Age);
   finally
-{$IFNDEF AUTOREFCOUNT}
-    fContainer.Release(component);
-{$ELSE}
-    component := nil;
-{$ENDIF}
+    component.Free;
   end;
 end;
 
@@ -626,23 +611,9 @@ begin
   fContainer.Build;
   obj1 := fContainer.Resolve<TAgeServiceBase>;
   obj2 := fContainer.Resolve<TAgeServiceBase>;
-  try
-    CheckNotNull(obj1, 'obj1 should not be nil');
-    CheckNotNull(obj2, 'obj2 should not be nil');
-    CheckSame(obj1, obj2, 'obj1 should be the same as obj2.');
-  finally
-{$IFNDEF AUTOREFCOUNT}
-    fContainer.Release(obj1);
-    try
-      // might raise an exception because ClassType is nil with FastMM4 full debug
-      fContainer.Release(obj2);
-    except
-    end;
-{$ELSE}
-    obj1 := nil;
-    obj2 := nil;
-{$ENDIF}
-  end;
+  CheckNotNull(obj1, 'obj1 should not be nil');
+  CheckNotNull(obj2, 'obj2 should not be nil');
+  CheckSame(obj1, obj2, 'obj1 should be the same as obj2.');
 end;
 
 procedure TTestSimpleContainer.TestTransient;
@@ -659,13 +630,8 @@ begin
     CheckNotNull(obj2, 'obj2 should not be nil');
     CheckTrue(obj1 <> obj2, 'obj1 should not be the same as obj2.');
   finally
-{$IFNDEF AUTOREFCOUNT}
-    fContainer.Release(obj1);
-    fContainer.Release(obj2);
-{$ELSE}
-    obj1 := nil;
-    obj2 := nil;
-{$ENDIF}
+    obj1.Free;
+    obj2.Free;
   end;
 end;
 
@@ -1084,19 +1050,10 @@ end;
 
 procedure TTestDifferentServiceImplementations.TearDown;
 begin
-{$IFNDEF AUTOREFCOUNT}
-  fContainer.Release(fAnotherNameService);
-{$ENDIF}
   fAnotherNameService := nil;
-
-{$IFNDEF AUTOREFCOUNT}
-  fContainer.Release(fNameService);
-{$ENDIF}
   fNameService := nil;
-
-  fServices := Default(TArray<INameService>);
-  fServiceValues := Default(TArray<TValue>);
-
+  fServices := nil;
+  fServiceValues := nil;
   inherited TearDown;
 end;
 
@@ -1207,10 +1164,6 @@ end;
 
 procedure TTypedInjectionTestCase.TearDown;
 begin
-{$IFNDEF AUTOREFCOUNT}
-  fContainer.Release(fInjectionExplorer);
-  fContainer.Release(fNameService);
-{$ENDIF}
   fInjectionExplorer := nil;
   fNameService := nil;
   inherited TearDown;
@@ -1461,10 +1414,6 @@ end;
 
 procedure TTestImplementsDifferentServices.TearDown;
 begin
-{$IFNDEF AUTOREFCOUNT}
-  fContainer.Release(fAgeService);
-  fContainer.Release(fNameService);
-{$ENDIF}
   fAgeService := nil;
   fNameService := nil;
   inherited TearDown;
