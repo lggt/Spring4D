@@ -2637,6 +2637,11 @@ function GetVirtualMethod(const classType: TClass; const index: Integer): Pointe
 
 function GetAbstractError: Pointer;
 
+/// <summary>
+///   Returns the address of the equals operator overload of the record type
+/// </summary>
+function GetEqualsOperator(typeInfo: PTypeInfo): Pointer;
+
 {$IFNDEF DELPHIXE3_UP}
 function AtomicIncrement(var target: Integer): Integer;
 function AtomicDecrement(var target: Integer): Integer;
@@ -3274,6 +3279,36 @@ begin
   Result := 1;
   while Result <= value do
     Result := Result shl 1;
+end;
+
+function GetEqualsOperator(typeInfo: PTypeInfo): Pointer;
+var
+  method: TRttiMethod;
+  returnType: Pointer;
+  params: TArray<TRttiParameter>;
+  isStatic: Boolean;
+begin
+  Assert(typeInfo.Kind = tkRecord);
+
+  for method in TType.GetType(typeInfo).GetMethods do
+  begin
+    if method.ReturnType = nil then
+      Continue;
+    returnType := method.ReturnType.Handle;
+    isStatic := method.IsStatic;
+    if (returnType = System.TypeInfo(Boolean)) and isStatic
+      and SameText(method.Name, '&op_Equality') then
+    begin
+      params := method.GetParameters;
+      if (Length(params) = 2)
+        and (params[0].ParamType.Handle = typeInfo)
+        and (pfConst in params[0].Flags)
+        and (params[1].ParamType.Handle = typeInfo)
+        and (pfConst in params[0].Flags) then
+        Exit(method.CodeAddress);
+    end;
+  end;
+  Result := nil;
 end;
 
 {$ENDREGION}

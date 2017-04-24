@@ -2771,10 +2771,10 @@ implementation
 
 uses
   Character,
+  Rtti,
 {$IFDEF DELPHIXE8_UP}
   System.Hash,
 {$ENDIF}
-  Rtti,
   TypInfo,
   Spring.Collections.Dictionaries,
   Spring.Collections.Extensions,

@@ -115,6 +115,9 @@ type
   {$REGION 'IEqualityComparer<T>'}
     function GetHashCode(const value: T): Integer; reintroduce;
   protected
+    class var
+      fEquals: function(const left, right: T): Boolean;
+      fEqualsLoaded: Boolean;
     function Equals(const left, right: T): Boolean; reintroduce;
   {$ENDREGION}
   protected
@@ -727,13 +730,27 @@ end;
 
 function TEnumerableBase<T>.Equals(const left, right: T): Boolean;
 begin
-  if TType.Kind<T> = tkClass then
-    if PObject(@left)^ = nil then
-      Result := PObject(@right)^ = nil
-    else
-      Result := PObject(@left).Equals(PObject(@right)^)
+  case TType.Kind<T> of
+    tkClass:
+      if PObject(@left)^ = nil then
+        Result := PObject(@right)^ = nil
+      else
+        Result := PObject(@left).Equals(PObject(@right)^);
+    tkRecord:
+    begin
+      if not fEqualsLoaded then
+      begin
+        fEqualsLoaded := True;
+        fEquals := GetEqualsOperator(TypeInfo(T));
+      end;
+      if Assigned(fEquals) then
+        Result := fEquals(left, right)
+      else
+        Result := fComparer.Compare(left, right) = 0;
+    end
   else
     Result := fComparer.Compare(left, right) = 0;
+  end;
 end;
 
 function TEnumerableBase<T>.EqualsTo(const collection: IEnumerable<T>;
