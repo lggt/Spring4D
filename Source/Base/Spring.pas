@@ -2178,7 +2178,7 @@ type
 
     class procedure Swap<T>(var left, right: T); static; inline;
 
-    class procedure SortTwoItems<T>(const comparer: IComparer<T>; var left, right: T); static;
+    class procedure SortTwoItems<T>(const comparer: IComparer<T>; var left, right: T); static; inline;
     class procedure SortThreeItems<T>(const comparer: IComparer<T>; var left, mid, right: T); static;
 
     class procedure InsertionSort<T>(var values: array of T; const comparer: IComparer<T>; left, right: Integer); static;
@@ -8859,7 +8859,7 @@ class procedure TArray.DownHeap<T>(var values: array of T;
   const comparer: IComparer<T>; left, count, i: Integer);
 var
   temp: T;
-  child, n, x: Integer;
+  child, n: Integer;
 begin
   temp := values[left + i - 1];
   n := count div 2;
@@ -8913,18 +8913,18 @@ end;
 class function TArray.QuickSortPartition<T>(var values: array of T;
   const comparer: IComparer<T>; left, right: Integer): Integer;
 var
-  mid, pivotIndex: Integer;
+  middle, pivotIndex: Integer;
   pivot: T;
 begin
-  mid := left + (right - left) div 2;
+  middle := left + (right - left) div 2;
 
-  SortThreeItems<T>(comparer, values[left], values[mid], values[right]);
+  SortThreeItems<T>(comparer, values[left], values[middle], values[right]);
 
   Dec(right);
   pivotIndex := right;
 
-  pivot := values[mid];
-  Swap<T>(values[mid], values[right]);
+  pivot := values[middle];
+  Swap<T>(values[middle], values[right]);
 
   while left < right do
   begin
@@ -8948,25 +8948,26 @@ end;
 class procedure TArray.IntroSort<T>(var values: array of T;
   const comparer: IComparer<T>; left, right, depthLimit: Integer);
 var
-  count, pivot: Integer;
+  partitionSize, pivot: Integer;
 begin
   while right > left do
   begin
-    count := right - left + 1;
-    if count = 1 then
+    partitionSize := right - left + 1;
+    if partitionSize <= IntrosortSizeThreshold then
+    begin
+      if partitionSize = 1 then
       Exit;
-    if count = 2 then
+      if partitionSize = 2 then
     begin
       SortTwoItems<T>(comparer, values[left], values[right]);
       Exit;
     end;
-    if count = 3 then
+      if partitionSize = 3 then
     begin
       SortThreeItems<T>(comparer, values[left], values[right - 1], values[right]);
       Exit;
     end;
-    if count <= IntrosortSizeThreshold then
-    begin
+
       InsertionSort<T>(values, comparer, left, right);
       Exit;
     end;
@@ -8976,8 +8977,8 @@ begin
       HeapSort<T>(values, comparer, left, right);
       Exit;
     end;
-
     Dec(depthLimit);
+
     pivot := QuickSortPartition<T>(values, comparer, left, right);
     IntroSort<T>(values, comparer, pivot + 1, right, depthLimit);
     right := pivot - 1;

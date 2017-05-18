@@ -2608,6 +2608,11 @@ type
     class function CreateEvictingQueue<T>(size: Integer): IQueue<T>; overload; static;
     class function CreateEvictingQueue<T: class>(size: Integer; ownsObjects: Boolean): IQueue<T>; overload; static;
 
+    class function CreatePriorityQueue<T>: IQueue<T>; overload; static;
+    class function CreatePriorityQueue<T>(const comparer: IComparer<T>): IQueue<T>; overload; static;
+    class function CreatePriorityQueue<T: class>(ownsObjects: Boolean): IQueue<T>; overload; static;
+    class function CreatePriorityQueue<T: class>(const comparer: IComparer<T>; ownsObjects: Boolean): IQueue<T>; overload; static;
+
     class function CreateDeque<T>: IDeque<T>; overload; static;
     class function CreateDeque<T: class>(ownsObjects: Boolean): IDeque<T>; overload; static;
     class function CreateDeque<T>(const values: array of T): IDeque<T>; overload; static;
@@ -3214,6 +3219,29 @@ class function TCollections.CreateEvictingQueue<T>(size: Integer;
   ownsObjects: Boolean): IQueue<T>;
 begin
   Result := TEvictingQueue<T>.Create(size, ownsObjects);
+end;
+
+class function TCollections.CreatePriorityQueue<T>: IQueue<T>;
+begin
+  Result := TPriorityQueue<T>.Create;
+end;
+
+class function TCollections.CreatePriorityQueue<T>(
+  ownsObjects: Boolean): IQueue<T>;
+begin
+  Result := TPriorityQueue<T>.Create(ownsObjects);
+end;
+
+class function TCollections.CreatePriorityQueue<T>(
+  const comparer: IComparer<T>): IQueue<T>;
+begin
+  Result := TPriorityQueue<T>.Create(comparer);
+end;
+
+class function TCollections.CreatePriorityQueue<T>(const comparer: IComparer<T>;
+  ownsObjects: Boolean): IQueue<T>;
+begin
+  Result := TPriorityQueue<T>.Create(comparer, ownsObjects);
 end;
 
 class function TCollections.CreateDeque<T>: IDeque<T>;

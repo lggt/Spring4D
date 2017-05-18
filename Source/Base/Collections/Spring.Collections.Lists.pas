@@ -68,9 +68,9 @@ type
     fCount: Integer;
     fVersion: Integer;
     procedure Grow(capacity: Integer);
-    procedure DeleteInternal(index: Integer; notification: TCollectionChangedAction); inline;
+    procedure DeleteInternal(index: Integer; action: TCollectionChangedAction); inline;
     function DeleteAllInternal(const match: Predicate<T>;
-      notification: TCollectionChangedAction; const list: IList<T>): Integer;
+      action: TCollectionChangedAction; const list: IList<T>): Integer;
     procedure DeleteRangeInternal(index, count: Integer; doClear: Boolean);
     procedure InsertRangeInternal(index, count: Integer; const values: array of T);
   protected
@@ -807,7 +807,7 @@ begin
 end;
 
 procedure TAbstractArrayList<T>.DeleteInternal(index: Integer;
-  notification: TCollectionChangedAction);
+  action: TCollectionChangedAction);
 var
   oldItem: T;
   listCount: Integer;
@@ -841,9 +841,9 @@ begin
     fItems[listCount] := Default(T);
 
   if Assigned(Notify) then
-    Notify(Self, oldItem, notification);
+    Notify(Self, oldItem, action);
   if OwnsObjects then
-    if notification = caRemoved then
+    if action = caRemoved then
       FreeObject(oldItem);
 end;
 
@@ -1097,7 +1097,7 @@ begin
 end;
 
 function TAbstractArrayList<T>.DeleteAllInternal(const match: Predicate<T>;
-  notification: TCollectionChangedAction; const list: IList<T>): Integer;
+  action: TCollectionChangedAction; const list: IList<T>): Integer;
 var
   itemCount, freeIndex, current: Integer;
 begin
@@ -1119,8 +1119,8 @@ begin
   {$IFDEF OVERFLOWCHECKS_ON}{$Q+}{$ENDIF}
 
   if Assigned(Notify) then
-    Notify(Self, fItems[freeIndex], notification);
-  if notification = caExtracted then
+    Notify(Self, fItems[freeIndex], action);
+  if action = caExtracted then
     list.Add(fItems[freeIndex])
   else if OwnsObjects then
     FreeObject(fItems[freeIndex]);
@@ -1132,8 +1132,8 @@ begin
     while (current < itemCount) and match(fItems[current]) do
     begin
       if Assigned(Notify) then
-        Notify(Self, fItems[current], notification);
-      if notification = caExtracted then
+        Notify(Self, fItems[current], action);
+      if action = caExtracted then
         list.Add(fItems[current])
       else if OwnsObjects then
         FreeObject(fItems[current]);
