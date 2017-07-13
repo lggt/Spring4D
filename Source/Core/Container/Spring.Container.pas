@@ -47,7 +47,7 @@ type
   private
     fRegistry: IComponentRegistry;
     fBuilder: IComponentBuilder;
-    fInjector: IDependencyInjector;
+    fInjectionBuilder: IInjectionBuilder;
     fRegistrationManager: TRegistrationManager;
     fResolver: IDependencyResolver;
     fProxyFactory: IProxyFactory;
@@ -69,7 +69,7 @@ type
     class destructor Destroy;
   {$REGION 'Implements IKernel'}
     function GetBuilder: IComponentBuilder; inline;
-    function GetInjector: IDependencyInjector; inline;
+    function GetInjectionBuilder: IInjectionBuilder; inline;
     function GetRegistry: IComponentRegistry; inline;
     function GetResolver: IDependencyResolver; inline;
     function GetLogger: ILogger; inline;
@@ -81,7 +81,7 @@ type
   {$ENDREGION}
     procedure InitializeInspectors; virtual;
     property Builder: IComponentBuilder read GetBuilder;
-    property Injector: IDependencyInjector read GetInjector;
+    property InjectionBuilder: IInjectionBuilder read GetInjectionBuilder;
     property Registry: IComponentRegistry read GetRegistry;
     property Resolver: IDependencyResolver read GetResolver;
   public
@@ -229,7 +229,7 @@ begin
   fRegistry.OnChanged.Add(HandleRegistryChanged);
   fBuilder := TComponentBuilder.Create(Self);
   fBuilder.OnBuild.Add(HandleBuild);
-  fInjector := TDependencyInjector.Create;
+  fInjectionBuilder := TInjectionBuilder.Create;
   fRegistrationManager := TRegistrationManager.Create(Self);
   fResolver := TDependencyResolver.Create(Self);
   fProxyFactory := TProxyFactory.Create(Self);
@@ -258,7 +258,7 @@ begin
   fExtensions := nil;
   fProxyFactory := nil;
   fResolver := nil;
-  fInjector := nil;
+  fInjectionBuilder := nil;
   fBuilder := nil;
   fRegistry := nil;
 
@@ -321,9 +321,9 @@ begin
   Result := fRegistry;
 end;
 
-function TContainer.GetInjector: IDependencyInjector;
+function TContainer.GetInjectionBuilder: IInjectionBuilder;
 begin
-  Result := fInjector;
+  Result := fInjectionBuilder;
 end;
 
 function TContainer.GetKernel: IKernel;

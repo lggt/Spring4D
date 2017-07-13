@@ -96,7 +96,7 @@ type
     procedure DoInject(const instance: TValue; const arguments: array of TValue); override;
   end;
 
-  TDependencyInjector = class(TInterfacedObject, IDependencyInjector)
+  TInjectionBuilder = class(TInterfacedObject, IInjectionBuilder)
   public
     function InjectConstructor(const model: TComponentModel;
       const parameterTypes: array of PTypeInfo): IInjection; overload;
@@ -320,7 +320,7 @@ end;
 
 {$REGION 'TDependencyInjector'}
 
-function TDependencyInjector.InjectConstructor(const model: TComponentModel;
+function TInjectionBuilder.InjectConstructor(const model: TComponentModel;
   const parameterTypes: array of PTypeInfo): IInjection;
 var
   predicate: Predicate<TRttiMethod>;
@@ -338,7 +338,7 @@ begin
   model.ConstructorInjections.Add(Result);
 end;
 
-function TDependencyInjector.InjectMethod(const model: TComponentModel;
+function TInjectionBuilder.InjectMethod(const model: TComponentModel;
   const methodName: string): IInjection;
 var
   method: TRttiMethod;
@@ -357,7 +357,7 @@ begin
     model.MethodInjections.Add(Result);
 end;
 
-function TDependencyInjector.InjectMethod(const model: TComponentModel;
+function TInjectionBuilder.InjectMethod(const model: TComponentModel;
   const methodName: string; const parameterTypes: array of PTypeInfo): IInjection;
 var
   predicate: Predicate<TRttiMethod>;
@@ -380,7 +380,7 @@ begin
     model.MethodInjections.Add(Result);
 end;
 
-function TDependencyInjector.InjectProperty(const model: TComponentModel;
+function TInjectionBuilder.InjectProperty(const model: TComponentModel;
   const propertyName: string): IInjection;
 var
   propertyMember: TRttiProperty;
@@ -399,7 +399,7 @@ begin
     model.PropertyInjections.Add(Result);
 end;
 
-function TDependencyInjector.InjectField(const model: TComponentModel;
+function TInjectionBuilder.InjectField(const model: TComponentModel;
   const fieldName: string): IInjection;
 var
   field: TRttiField;
@@ -418,7 +418,7 @@ begin
     model.FieldInjections.Add(Result);
 end;
 
-function TDependencyInjector.InjectConstructor(
+function TInjectionBuilder.InjectConstructor(
   const model: TComponentModel): IInjection;
 var
   predicate: Predicate<TRttiMethod>;
@@ -432,7 +432,7 @@ begin
   model.ConstructorInjections.Add(Result);
 end;
 
-function TDependencyInjector.InjectConstructor(const model: TComponentModel;
+function TInjectionBuilder.InjectConstructor(const model: TComponentModel;
   const arguments: array of TValue): IInjection;
 begin
   Result := TConstructorInjection.Create;
@@ -440,7 +440,7 @@ begin
   Result.InitializeArguments(arguments);
 end;
 
-function TDependencyInjector.InjectMethod(const model: TComponentModel;
+function TInjectionBuilder.InjectMethod(const model: TComponentModel;
   const methodName: string; const arguments: array of TValue): IInjection;
 begin
   Result := TMethodInjection.Create(methodName);
@@ -448,14 +448,14 @@ begin
   Result.InitializeArguments(arguments);
 end;
 
-function TDependencyInjector.InjectProperty(const model: TComponentModel;
+function TInjectionBuilder.InjectProperty(const model: TComponentModel;
   const propertyName: string; const value: TValue): IInjection;
 begin
   Result := InjectProperty(model, propertyName);
   Result.InitializeArguments(value);
 end;
 
-function TDependencyInjector.InjectField(const model: TComponentModel;
+function TInjectionBuilder.InjectField(const model: TComponentModel;
   const fieldName: string; const value: TValue): IInjection;
 begin
   Result := InjectField(model, fieldName);

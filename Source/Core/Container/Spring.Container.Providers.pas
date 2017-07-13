@@ -59,7 +59,6 @@ type
     fKernel: IKernel;
     function TryHandle(const context: IContext;
       const candidate: IInjection; var winner: IInjection): Boolean;
-    property Kernel: IKernel read fKernel;
   public
     constructor Create(const kernel: IKernel);
     function Find(const context: IContext;
@@ -191,7 +190,7 @@ var
   injection: IInjection;
 begin
   Result := context.TryHandle(candidate, injection)
-    and Kernel.Resolver.CanResolve(
+    and fKernel.Resolver.CanResolve(
     context, injection.Dependencies, injection.Arguments);
   if Result then
     winner := injection;

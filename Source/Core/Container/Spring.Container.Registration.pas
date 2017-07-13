@@ -613,68 +613,68 @@ end;
 
 function TRegistration.InjectConstructor: IRegistration;
 begin
-  fKernel.Injector.InjectConstructor(fModel);
+  fKernel.InjectionBuilder.InjectConstructor(fModel);
   Result := Self;
 end;
 
 function TRegistration.InjectConstructor(
   const parameterTypes: array of PTypeInfo): IRegistration;
 begin
-  fKernel.Injector.InjectConstructor(fModel, parameterTypes);
+  fKernel.InjectionBuilder.InjectConstructor(fModel, parameterTypes);
   Result := Self;
 end;
 
 function TRegistration.InjectProperty(
   const propertyName: string): IRegistration;
 begin
-  fKernel.Injector.InjectProperty(fModel, propertyName);
+  fKernel.InjectionBuilder.InjectProperty(fModel, propertyName);
   Result := Self;
 end;
 
 function TRegistration.InjectMethod(const methodName: string;
   const parameterTypes: array of PTypeInfo): IRegistration;
 begin
-  fKernel.Injector.InjectMethod(fModel, methodName, parameterTypes);
+  fKernel.InjectionBuilder.InjectMethod(fModel, methodName, parameterTypes);
   Result := Self;
 end;
 
 function TRegistration.InjectMethod(const methodName: string): IRegistration;
 begin
-  fKernel.Injector.InjectMethod(fModel, methodName);
+  fKernel.InjectionBuilder.InjectMethod(fModel, methodName);
   Result := Self;
 end;
 
 function TRegistration.InjectField(const fieldName: string): IRegistration;
 begin
-  fKernel.Injector.InjectField(fModel, fieldName);
+  fKernel.InjectionBuilder.InjectField(fModel, fieldName);
   Result := Self;
 end;
 
 function TRegistration.InjectConstructor(
   const arguments: array of TValue): IRegistration;
 begin
-  fKernel.Injector.InjectConstructor(fModel, arguments);
+  fKernel.InjectionBuilder.InjectConstructor(fModel, arguments);
   Result := Self;
 end;
 
 function TRegistration.InjectProperty(const propertyName: string;
   const value: TValue): IRegistration;
 begin
-  fKernel.Injector.InjectProperty(fModel, propertyName, value);
+  fKernel.InjectionBuilder.InjectProperty(fModel, propertyName, value);
   Result := Self;
 end;
 
 function TRegistration.InjectMethod(const methodName: string;
   const arguments: array of TValue): IRegistration;
 begin
-  fKernel.Injector.InjectMethod(fModel, methodName, arguments);
+  fKernel.InjectionBuilder.InjectMethod(fModel, methodName, arguments);
   Result := Self;
 end;
 
 function TRegistration.InjectField(const fieldName: string;
   const value: TValue): IRegistration;
 begin
-  fKernel.Injector.InjectField(fModel, fieldName, value);
+  fKernel.InjectionBuilder.InjectField(fModel, fieldName, value);
   Result := Self;
 end;
 

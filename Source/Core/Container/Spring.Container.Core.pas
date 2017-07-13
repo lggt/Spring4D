@@ -49,7 +49,7 @@ type
   IResolver = interface;
   IDependencyResolver = interface;
   IInjection = interface;
-  IDependencyInjector = interface;
+  IInjectionBuilder = interface;
   ILifetimeManager = interface;
   IProvider = interface;
   IContainerExtension = interface;
@@ -98,7 +98,7 @@ type
     ['{9E90EADB-A720-4394-A5E0-5DF0550C1E92}']
   {$REGION 'Property Accessors'}
     function GetBuilder: IComponentBuilder;
-    function GetInjector: IDependencyInjector;
+    function GetInjectionBuilder: IInjectionBuilder;
     function GetRegistry: IComponentRegistry;
     function GetResolver: IDependencyResolver;
     function GetProxyFactory: IProxyFactory;
@@ -111,7 +111,7 @@ type
     procedure AddExtension(const extension: IContainerExtension);
 
     property Builder: IComponentBuilder read GetBuilder;
-    property Injector: IDependencyInjector read GetInjector;
+    property InjectionBuilder: IInjectionBuilder read GetInjectionBuilder;
     property Registry: IComponentRegistry read GetRegistry;
     property Resolver: IDependencyResolver read GetResolver;
     property ProxyFactory: IProxyFactory read GetProxyFactory;
@@ -266,7 +266,7 @@ type
 
   IInjectionList = IList<IInjection>;
 
-  IDependencyInjector = interface
+  IInjectionBuilder = interface
     ['{4627FFB4-F8D9-4A70-A281-8D323FAAA4CB}']
     function InjectConstructor(const model: TComponentModel;
       const parameterTypes: array of PTypeInfo): IInjection; overload;
