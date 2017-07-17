@@ -73,6 +73,7 @@ type
     {$IFDEF AUTOREFCOUNT}[Unsafe]{$ENDIF}
     fConfiguration: TLoggingConfiguration;
     procedure EnsureConfiguration;
+    function GetTargetParentType(const target: ITarget): TRttiType;
   public
     function CanResolve(const request: IRequest): Boolean; override;
     function Resolve(const request: IRequest): TValue; override;
@@ -139,7 +140,7 @@ begin
   if Result then
   begin
     EnsureConfiguration;
-    componentType := target.Member.Parent;
+    componentType := GetTargetParentType(target);
     Result := fConfiguration.HasLogger(componentType.Handle);
 
     if not Result and componentType.IsInstance then
@@ -165,6 +166,18 @@ begin
       TypeInfo(TLoggingConfiguration)).AsType<TLoggingConfiguration>;
 end;
 
+function TLoggerResolver.GetTargetParentType(
+  const target: ITarget): TRttiType;
+var
+  member: TRttiMember;
+begin
+  if target.Target is TRttiParameter then
+    member := target.Target.Parent as TRttiMember
+  else
+    member := target.Target as TRttiMember;
+  Result := member.Parent;
+end;
+
 function TLoggerResolver.Resolve(const request: IRequest): TValue;
 var
   handle: PTypeInfo;
@@ -172,7 +185,7 @@ var
 begin
   Assert(Assigned(fConfiguration));
 
-  componentType := request.Target.Member.Parent;
+  componentType := GetTargetParentType(request.Target);
   if fConfiguration.HasLogger(componentType.Handle) then
     handle := componentType.Handle
   else

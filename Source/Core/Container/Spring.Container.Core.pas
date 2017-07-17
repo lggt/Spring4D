@@ -61,27 +61,22 @@ type
 
   ITarget = interface
     ['{B365D350-5333-4C48-BD28-BD482EC15692}']
-    function GetTypeInfo: PTypeInfo;
-//    function GetName: string;
-    function GetMember: TRttiMember;
     function GetTarget: TRttiNamedObject;
+    function GetTargetType: PTypeInfo;
 
-    property TypeInfo: PTypeInfo read GetTypeInfo;
-    property Member: TRttiMember read GetMember;
     property Target: TRttiNamedObject read GetTarget;
+    property TargetType: PTypeInfo read GetTargetType;
   end;
 
   TTarget = class(TInterfacedObject, ITarget)
   private
-    fTargetType: TRttiType;
     fTarget: TRttiNamedObject;
-    function GetTypeInfo: PTypeInfo;
-//    function GetName: string;
-    function GetMember: TRttiMember;
+    fTargetType: TRttiType;
     function GetTarget: TRttiNamedObject;
+    function GetTargetType: PTypeInfo;
   public
-    constructor Create(const targetType: TRttiType;
-      const target: TRttiNamedObject);
+    constructor Create(const target: TRttiNamedObject;
+      const targetType: TRttiType);
   end;
 
   IConstructorSelector = interface
@@ -505,19 +500,11 @@ uses
 
 {$REGION 'TTarget'}
 
-constructor TTarget.Create(const targetType: TRttiType;
-  const target: TRttiNamedObject);
+constructor TTarget.Create(const target: TRttiNamedObject;
+  const targetType: TRttiType);
 begin
-  fTargetType := targetType;
   fTarget := target;
-end;
-
-function TTarget.GetMember: TRttiMember;
-begin
-  if fTarget is TRttiParameter then
-    Result := fTarget.Parent as TRttiMember
-  else
-    Result := fTarget as TRttiMember;
+  fTargetType := targetType;
 end;
 
 function TTarget.GetTarget: TRttiNamedObject;
@@ -525,7 +512,7 @@ begin
   Result := fTarget;
 end;
 
-function TTarget.GetTypeInfo: PTypeInfo;
+function TTarget.GetTargetType: PTypeInfo;
 begin
   if Assigned(fTargetType) then
     Result := fTargetType.Handle
@@ -731,7 +718,7 @@ begin
   params := method.GetParameters;
   SetLength(dependencies, Length(params));
   for i := Low(dependencies) to High(dependencies) do
-    dependencies[i] := TTarget.Create(params[i].ParamType, params[i]);
+    dependencies[i] := TTarget.Create(params[i], params[i].ParamType);
   Result := fKernel.Resolver.CanResolve(nil, dependencies, fArguments);
 end;
 

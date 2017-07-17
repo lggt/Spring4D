@@ -230,7 +230,7 @@ var
   serviceType: PTypeInfo;
   componentModel: TComponentModel;
 begin
-  if Assigned(request.Target) and (request.Target.TypeInfo = nil) then
+  if Assigned(request.Target) and (request.Target.TargetType = nil) then
     Exit(True);
 
   if CanResolveFromContext(request) then
@@ -269,7 +269,7 @@ var
   componentModel: TComponentModel;
   instance: TValue;
 begin
-  if Assigned(request.Target) and (request.Target.TypeInfo = nil) then
+  if Assigned(request.Target) and (request.Target.TargetType = nil) then
     Exit(TValue.Empty);
 
   if CanResolveFromContext(request) then
@@ -305,7 +305,7 @@ begin
   begin
     for i := Low(targets) to High(targets) do
     begin
-      request := TRequest.Create(targets[i].TypeInfo, context, targets[i], arguments[i]);
+      request := TRequest.Create(targets[i].TargetType, context, targets[i], arguments[i]);
       if not CanResolve(request) then
         Exit(False);
     end;
@@ -314,7 +314,7 @@ begin
   begin
     for i := Low(targets) to High(targets) do
     begin
-      request := TRequest.Create(targets[i].TypeInfo, context, targets[i], nil);
+      request := TRequest.Create(targets[i].TargetType, context, targets[i], nil);
       if not CanResolve(request) then
         Exit(False);
     end;
@@ -368,13 +368,13 @@ begin
   if hasArgument then
     for i := Low(targets) to High(targets) do
     begin
-      request := TRequest.Create(targets[i].TypeInfo, context, targets[i], arguments[i]);
+      request := TRequest.Create(targets[i].TargetType, context, targets[i], arguments[i]);
       Result[i] := Resolve(request);
     end
   else
     for i := Low(targets) to High(targets) do
     begin
-      request := TRequest.Create(targets[i].TypeInfo, context, targets[i], nil);
+      request := TRequest.Create(targets[i].TargetType, context, targets[i], nil);
       Result[i] := Resolve(request);
     end;
 end;
@@ -603,7 +603,7 @@ begin
   if target = nil then
     Exit(False);
   argument := request.Parameter;
-  if target.TypeInfo <> TypeInfo(TComponent) then
+  if target.TargetType <> TypeInfo(TComponent) then
     Exit(False);
   if Kernel.Registry.HasService(TypeInfo(TComponent)) then
     Exit(False);
