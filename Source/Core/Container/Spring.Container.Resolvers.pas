@@ -241,7 +241,7 @@ begin
 
   argument := request.Parameter;
   if argument.IsEmpty then
-    Result := Kernel.Registry.HasDefault(request.Service)
+    Result := Kernel.Registry.HasService(request.Service)
   else if CanResolveFromArgument(request) then
     Result := True
   else if argument.TryAsType<TTypeKind>(Kind) and (kind = tkDynArray) then
