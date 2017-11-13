@@ -115,6 +115,15 @@ type
     function RegisterType(serviceType, componentType: PTypeInfo;
       const serviceName: string = ''): IRegistration; overload;
 
+    function RegisterType<TComponentType>(
+      const delegate: TProviderDelegate<TComponentType>): TRegistration<TComponentType>; overload;
+    function RegisterType<TServiceType>(
+      const delegate: TProviderDelegate<TServiceType>;
+      const serviceName: string): TRegistration<TServiceType>; overload;
+    function RegisterType<TServiceType, TComponentType>(
+      const delegate: TProviderDelegate<TComponentType>;
+      const serviceName: string = ''): TRegistration<TComponentType>; overload;
+
     procedure Build;
 
     function Resolve<T>: T; overload;
@@ -292,7 +301,6 @@ var
 begin
   inspectors := TArray<IBuilderInspector>.Create(
     TInterfaceInspector.Create,
-    TProviderInspector.Create,
     TLifetimeInspector.Create,
     TInjectionTargetInspector.Create,
     TConstructorInspector.Create,
@@ -401,8 +409,7 @@ end;
 function TContainer.RegisterInstance<TServiceType>(const instance: TServiceType;
   const serviceName: string): TRegistration<TServiceType>;
 begin
-  Result := fRegistrationManager.RegisterType<TServiceType>;
-  Result := Result.DelegateTo(
+  Result := fRegistrationManager.RegisterType<TServiceType>(
     function: TServiceType
     begin
       Result := instance;
@@ -419,6 +426,28 @@ function TContainer.RegisterType<TServiceType>(
   const serviceName: string): TRegistration<TServiceType>;
 begin
   Result := fRegistrationManager.RegisterType<TServiceType>;
+  Result := Result.Implements<TServiceType>(serviceName);
+end;
+
+function TContainer.RegisterType<TComponentType>(
+  const delegate: TProviderDelegate<TComponentType>): TRegistration<TComponentType>;
+begin
+  Result := fRegistrationManager.RegisterType<TComponentType>(delegate);
+end;
+
+function TContainer.RegisterType<TServiceType>(
+  const delegate: TProviderDelegate<TServiceType>;
+  const serviceName: string): TRegistration<TServiceType>;
+begin
+  Result := fRegistrationManager.RegisterType<TServiceType>(delegate);
+  Result := Result.Implements<TServiceType>(serviceName);
+end;
+
+function TContainer.RegisterType<TServiceType, TComponentType>(
+  const delegate: TProviderDelegate<TComponentType>;
+  const serviceName: string): TRegistration<TComponentType>;
+begin
+  Result := fRegistrationManager.RegisterType<TComponentType>(delegate);
   Result := Result.Implements<TServiceType>(serviceName);
 end;
 

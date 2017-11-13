@@ -97,8 +97,6 @@ type
     function Implements(serviceType: PTypeInfo): IRegistration; overload;
     function Implements(serviceType: PTypeInfo; const serviceName: string): IRegistration; overload;
 
-    function DelegateTo(const delegate: TProviderDelegate): IRegistration; overload;
-
     {$REGION 'Typed Injections'}
 
     function InjectConstructor: IRegistration; overload;
@@ -154,8 +152,6 @@ type
     function Implements(serviceType: PTypeInfo; const serviceName: string): TRegistration<T>; overload;
     function Implements<TServiceType>: TRegistration<T>; overload;
     function Implements<TServiceType>(const serviceName: string): TRegistration<T>; overload;
-
-    function DelegateTo(const delegate: TProviderDelegate<T>): TRegistration<T>; overload;
 
   {$REGION 'Typed Injections'}
 
@@ -219,8 +215,12 @@ type
     fKernel: IKernel;
   public
     constructor Create(const kernel: IKernel);
-    function RegisterType<TComponentType>: TRegistration<TComponentType>; overload;
+
     function RegisterType(componentType: PTypeInfo): IRegistration; overload;
+
+    function RegisterType<TComponentType>: TRegistration<TComponentType>; overload;
+    function RegisterType<TComponentType>(
+      const delegate: TProviderDelegate<TComponentType>): TRegistration<TComponentType>; overload;
   end;
 
 
@@ -587,12 +587,6 @@ begin
   Result := Self;
 end;
 
-function TRegistration.DelegateTo(const delegate: TProviderDelegate): IRegistration;
-begin
-  fModel.Provider := TDelegateProvider.Create(fKernel, fModel, delegate);
-  Result := Self;
-end;
-
 function TRegistration.InjectConstructor: IRegistration;
 begin
   fKernel.InjectionBuilder.InjectConstructor(fModel);
@@ -789,17 +783,6 @@ begin
   Result := Implements(TypeInfo(TServiceType), serviceName);
 end;
 
-function TRegistration<T>.DelegateTo(
-  const delegate: TProviderDelegate<T>): TRegistration<T>;
-begin
-  fRegistration.DelegateTo(
-    function: TValue
-    begin
-      Result := TValue.From<T>(delegate());
-    end);
-  Result := Self;
-end;
-
 function TRegistration<T>.GetModel: TComponentModel;
 begin
   Result := (fRegistration as TRegistration).fModel;
@@ -974,17 +957,33 @@ end;
 
 function TRegistrationManager.RegisterType(
   componentType: PTypeInfo): IRegistration;
+var
+  reg: TRegistration;
 begin
 {$IFDEF SPRING_ENABLE_GUARD}
   Guard.CheckNotNull(componentType, 'componentType');
 {$ENDIF}
 
-  Result := TRegistration.Create(fKernel, componentType);
+  reg := TRegistration.Create(fKernel, componentType);
+  reg.fModel.Provider := TReflectionProvider.Create(fKernel, reg.fModel);
+  Result := reg;
 end;
 
 function TRegistrationManager.RegisterType<TComponentType>: TRegistration<TComponentType>;
 begin
   Result := TRegistration<TComponentType>.Create(fKernel);
+  Result.Model.Provider := TReflectionProvider.Create(fKernel, Result.Model);
+end;
+
+function TRegistrationManager.RegisterType<TComponentType>(
+  const delegate: TProviderDelegate<TComponentType>): TRegistration<TComponentType>;
+begin
+  Result := TRegistration<TComponentType>.Create(fKernel);
+  Result.Model.Provider := TDelegateProvider.Create(fKernel, Result.Model,
+    function: TValue
+    begin
+      Result := TValue.From<TComponentType>(delegate());
+    end);
 end;
 
 {$ENDREGION}

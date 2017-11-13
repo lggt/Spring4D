@@ -692,7 +692,7 @@ procedure TTestInterception.TestByRegistrationOfInterface;
 var
   service: IService;
 begin
-  fContainer.RegisterType<IService>.DelegateTo(
+  fContainer.RegisterType<IService>(
     function: IService
     begin
       Result := TService.Create;

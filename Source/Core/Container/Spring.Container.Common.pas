@@ -398,8 +398,6 @@ type
     function Implements(serviceType: PTypeInfo): IRegistration; overload;
     function Implements(serviceType: PTypeInfo; const serviceName: string): IRegistration; overload;
 
-    function DelegateTo(const delegate: TProviderDelegate): IRegistration; overload;
-
     {$REGION 'Typed Injections'}
 
     function InjectConstructor: IRegistration; overload;

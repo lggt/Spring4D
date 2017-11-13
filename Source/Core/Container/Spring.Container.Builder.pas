@@ -64,11 +64,6 @@ type
     procedure ProcessModel(const kernel: IKernel; const model: TComponentModel);
   end;
 
-  TProviderInspector = class(TInterfacedObject, IBuilderInspector)
-  public
-    procedure ProcessModel(const kernel: IKernel; const model: TComponentModel);
-  end;
-
   TMemberInspector = class(TInterfacedObject)
   protected
     procedure HandleInjectAttribute(const target: TRttiNamedObject;
@@ -388,21 +383,6 @@ begin
     HandleInjectAttribute(field, injection.Dependencies[0], argument);
     injection.InitializeArguments([argument]);
   end;
-end;
-
-{$ENDREGION}
-
-
-{$REGION 'TProviderInspector'}
-
-procedure TProviderInspector.ProcessModel(
-  const kernel: IKernel; const model: TComponentModel);
-begin
-  if not Assigned(model.Provider) then
-    if model.ComponentType.TypeKind = tkClass then
-      model.Provider := TReflectionProvider.Create(kernel, model)
-    else
-      raise EBuilderException.CreateResFmt(@SRegistrationIncomplete, [model.ComponentTypeName]);
 end;
 
 {$ENDREGION}
