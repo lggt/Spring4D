@@ -387,7 +387,7 @@ function TContainer.RegisterFactory<TFactoryType>(
   paramResolution: TParamResolution): TRegistration<TFactoryType>;
 begin
   Result := RegisterType<TFactoryType>('');
-  Result := Result.AsFactory(paramResolution);
+  fRegistry.RegisterFactory(Result.Model, paramResolution);
 end;
 
 function TContainer.RegisterFactory<TFactoryType>(
@@ -395,7 +395,7 @@ function TContainer.RegisterFactory<TFactoryType>(
   paramResolution: TParamResolution): TRegistration<TFactoryType>;
 begin
   Result := RegisterType<TFactoryType>(serviceName);
-  Result := Result.AsFactory(paramResolution);
+  fRegistry.RegisterFactory(Result.Model, paramResolution);
 end;
 
 function TContainer.RegisterFactory<TFactoryType>(const serviceName,
@@ -403,7 +403,7 @@ function TContainer.RegisterFactory<TFactoryType>(const serviceName,
   paramResolution: TParamResolution): TRegistration<TFactoryType>;
 begin
   Result := RegisterType<TFactoryType>(serviceName);
-  Result := Result.AsFactory(resolvedServiceName, paramResolution);
+  fRegistry.RegisterFactory(Result.Model, resolvedServiceName, paramResolution);
 end;
 
 function TContainer.RegisterInstance<TServiceType>(const instance: TServiceType;

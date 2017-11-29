@@ -431,10 +431,6 @@ type
     function AsDefault: IRegistration; overload;
     function AsDefault(serviceType: PTypeInfo): IRegistration; overload;
 
-    function AsFactory(paramResolution: TParamResolution = TParamResolution.ByName): IRegistration; overload;
-    function AsFactory(const resolvedServiceName: string;
-      paramResolution: TParamResolution = TParamResolution.ByName): IRegistration; overload;
-
     function InterceptedBy(interceptorType: PTypeInfo;
       where: TWhere = TWhere.Last): IRegistration; overload;
     function InterceptedBy(const name: string;

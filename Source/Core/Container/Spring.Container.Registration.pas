@@ -129,10 +129,6 @@ type
     function AsDefault: IRegistration; overload;
     function AsDefault(serviceType: PTypeInfo): IRegistration; overload;
 
-    function AsFactory(paramResolution: TParamResolution = TParamResolution.ByName): IRegistration; overload;
-    function AsFactory(const resolvedServiceName: string;
-      paramResolution: TParamResolution = TParamResolution.ByName): IRegistration; overload;
-
     function InterceptedBy(interceptorType: PTypeInfo;
       where: TWhere = TWhere.Last): IRegistration; overload;
     function InterceptedBy(const name: string;
@@ -185,10 +181,6 @@ type
     function AsDefault<TServiceType>: TRegistration<T>; overload;
 
     function AsCustom<TLifetimeManagerType: class, constructor, ILifetimeManager>: TRegistration<T>;
-
-    function AsFactory(paramResolution: TParamResolution = TParamResolution.ByName): TRegistration<T>; overload;
-    function AsFactory(const resolvedServiceName: string;
-      paramResolution: TParamResolution = TParamResolution.ByName): TRegistration<T>; overload;
 
     function InterceptedBy(interceptorType: PTypeInfo;
       where: TWhere = TWhere.Last): TRegistration<T>; overload;
@@ -705,20 +697,6 @@ begin
   Result := Self;
 end;
 
-function TRegistration.AsFactory(
-  paramResolution: TParamResolution): IRegistration;
-begin
-  fKernel.Registry.RegisterFactory(fModel, paramResolution);
-  Result := Self;
-end;
-
-function TRegistration.AsFactory(const resolvedServiceName: string;
-  paramResolution: TParamResolution = TParamResolution.ByName): IRegistration;
-begin
-  fKernel.Registry.RegisterFactory(fModel, resolvedServiceName, paramResolution);
-  Result := Self;
-end;
-
 procedure TRegistration.InterceptedBy(
   const interceptorRef: TInterceptorReference; where: TWhere);
 begin
@@ -902,19 +880,6 @@ end;
 function TRegistration<T>.AsDefault<TServiceType>: TRegistration<T>;
 begin
   Result := AsDefault(TypeInfo(TServiceType));
-end;
-
-function TRegistration<T>.AsFactory(paramResolution: TParamResolution): TRegistration<T>;
-begin
-  fRegistration.AsFactory(paramResolution);
-  Result := Self;
-end;
-
-function TRegistration<T>.AsFactory(const resolvedServiceName: string;
-  paramResolution: TParamResolution): TRegistration<T>;
-begin
-  fRegistration.AsFactory(resolvedServiceName, paramResolution);
-  Result := Self;
 end;
 
 function TRegistration<T>.InterceptedBy(interceptorType: PTypeInfo;
