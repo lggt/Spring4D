@@ -286,7 +286,7 @@ var
   i: Integer;
 begin
   if model.ConstructorInjections.Any then Exit;  // TEMP
-  if model.ComponentTypeInfo.Kind <> tkClass then Exit;
+  if not model.ComponentType.IsInstance then Exit;
   predicate := TMethodFilters.IsConstructor
     and not TMethodFilters.HasParameterFlags([pfVar, pfArray, pfOut]);
   for method in model.ComponentType.Methods.Where(predicate) do
@@ -420,7 +420,7 @@ begin
     method := model.ComponentType.Methods.FirstOrDefault(filter);
     if not Assigned(method) then
       raise EBuilderException.CreateResFmt(@SUnresovableInjection, [
-        model.ComponentTypeName]);
+        model.ComponentType.DefaultName]);
     injection.Initialize(method);
   end;
 end;
@@ -440,7 +440,7 @@ begin
     method := model.ComponentType.Methods.FirstOrDefault(filter);
     if not Assigned(method) then
       raise EBuilderException.CreateResFmt(@SUnresovableInjection, [
-        model.ComponentTypeName]);
+        model.ComponentType.DefaultName]);
     injection.Initialize(method);
   end;
 end;
@@ -459,8 +459,8 @@ var
   service: TRttiInterfaceType;
 begin
   if model.Services.Any then Exit;
-  if model.ComponentType.IsRecord and not model.HasService(model.ComponentTypeInfo) then
-    kernel.Registry.RegisterService(model, model.ComponentTypeInfo)
+  if model.ComponentType.IsRecord and not model.HasService(model.ComponentType.Handle) then
+    kernel.Registry.RegisterService(model, model.ComponentType.Handle)
   else
   begin
     attributes := model.ComponentType.GetCustomAttributes<ImplementsAttribute>;
@@ -478,15 +478,15 @@ begin
         if Assigned(service.BaseType) and not model.HasService(service.Handle) then
         begin
           kernel.Registry.RegisterService(model, service.Handle,
-            service.DefaultName + '@' + model.ComponentTypeName);
+            service.DefaultName + '@' + model.ComponentType.DefaultName);
           kernel.Registry.RegisterDefault(model, service.Handle);
         end;
-    if TType.IsDelegate(model.ComponentTypeInfo)
-      and not model.HasService(model.ComponentTypeInfo) then
-      kernel.Registry.RegisterService(model, model.ComponentTypeInfo);
+    if TType.IsDelegate(model.ComponentType.Handle)
+      and not model.HasService(model.ComponentType.Handle) then
+      kernel.Registry.RegisterService(model, model.ComponentType.Handle);
 
     if not model.Services.Any then
-      kernel.Registry.RegisterService(model, model.ComponentTypeInfo);
+      kernel.Registry.RegisterService(model, model.ComponentType.Handle);
   end;
 end;
 
@@ -558,7 +558,7 @@ procedure TAbstractMethodInspector.ProcessModel(const kernel: IKernel;
 begin
   if model.ComponentType.IsClass
     and HasVirtualAbstractMethod(model.ComponentType) then
-    kernel.Logger.Warn(Format('component type %s contains abstract methods', [model.ComponentTypeName]));
+    kernel.Logger.Warn(Format('component type %s contains abstract methods', [model.ComponentType.DefaultName]));
 end;
 
 {$ENDREGION}
