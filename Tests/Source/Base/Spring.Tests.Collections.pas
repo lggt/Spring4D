@@ -650,6 +650,41 @@ type
     procedure TestToArray;
   end;
 
+  TTestMultiSetBase = class(TTestCase)
+  private
+    procedure CheckCount(expected: Integer);
+  protected
+    SUT: IMultiSet<string>;
+    procedure TearDown; override;
+    function IsSorted: Boolean; virtual;
+  published
+    procedure TestAdd;
+    procedure TestRemove;
+
+    procedure TestOrderedByCount;
+    procedure TestSetEquals;
+  end;
+
+  TTestMultiSet = class(TTestMultiSetBase)
+  protected
+    procedure SetUp; override;
+  published
+    procedure TestElements;
+    procedure TestEntries;
+    procedure TestToArray;
+  end;
+
+  TTestSortedMultiSet = class(TTestMultiSetBase)
+  private
+  protected
+    procedure SetUp; override;
+    function IsSorted: Boolean; override;
+  published
+    procedure TestElements;
+    procedure TestEntries;
+    procedure TestToArray;
+  end;
+
   TTestRedBlackTreeInteger = class(TTestCase)
   private
     SUT: IBinaryTree<Integer>;
@@ -687,6 +722,7 @@ implementation
 uses
   Spring.Collections.Adapters,
   Spring.Collections.MultiMaps,
+  Spring.Collections.MultiSets,
   Spring.Collections.Queues,
   Spring.Collections.Stacks,
   StrUtils,
@@ -695,6 +731,8 @@ uses
 
 type
   TListMultiMap = TListMultiMap<Integer,Integer>;
+  THashMultiSet = THashMultiSet<string>;
+  TTreeMultiSet = TTreeMultiSet<string>;
 
 const
   MaxItems = 1000;
@@ -4413,6 +4451,181 @@ begin
   CheckEquals('b', values[1]);
   CheckEquals('c', values[2]);
   CheckEquals('d', values[3]);
+end;
+
+{$ENDREGION}
+
+
+{$REGION 'TTestMultiSetBase'}
+
+procedure TTestMultiSetBase.CheckCount(expected: Integer);
+begin
+  CheckEquals(expected, SUT.Count, 'Count');
+end;
+
+function TTestMultiSetBase.IsSorted: Boolean;
+begin
+  Result := False;
+end;
+
+procedure TTestMultiSetBase.TearDown;
+begin
+  SUT := nil;
+  inherited;
+end;
+
+procedure TTestMultiSetBase.TestAdd;
+begin
+  CheckTrue(SUT.Add('a'));
+  CheckCount(1);
+  CheckTrue(SUT.Add('b'));
+  CheckCount(2);
+  CheckEquals(1, SUT.Add('a', 2));
+  CheckCount(4);
+  CheckEquals(3, SUT['a']);
+end;
+
+procedure TTestMultiSetBase.TestOrderedByCount;
+var
+  orderedByCount: IReadOnlyMultiSet<string>;
+begin
+  SUT.AddRange(['a', 'c', 'b', 'b', 'a', 'b']);
+  orderedByCount := SUT.OrderedByCount;
+
+  Check(orderedByCount.Elements.EqualsTo(['b', 'a', 'c']));
+end;
+
+procedure TTestMultiSetBase.TestRemove;
+begin
+  SUT.Add('a', 3);
+  SUT.Add('b');
+
+  CheckTrue(SUT.Remove('a'));
+  CheckCount(3);
+  CheckEquals(2, SUT.Remove('a', 1));
+  CheckCount(2);
+  CheckFalse(SUT.Remove('c'));
+  CheckEquals(0, SUT.Remove('c', 2));
+  CheckEquals(1, SUT.Remove('b', 2));
+  CheckCount(1);
+end;
+
+procedure TTestMultiSetBase.TestSetEquals;
+begin
+  SUT.AddRange(['b', 'c', 'a', 'b', 'a', 'b']);
+  CheckTrue(SUT.SetEquals(TEnumerable.From<string>(['b', 'b', 'c', 'a', 'a', 'b'])));
+  CheckFalse(SUT.SetEquals(TEnumerable.From<string>(['b', 'b', 'c', 'a', 'a', 'b', 'a'])));
+  CheckFalse(SUT.SetEquals(TEnumerable.From<string>(['b', 'b', 'c', 'a', 'a', 'b', 'd'])));
+  CheckFalse(SUT.SetEquals(TEnumerable.From<string>(['a', 'b', 'c'])));
+  CheckFalse(SUT.SetEquals(TEnumerable.From<string>(['a', 'b', 'c'])));
+end;
+
+{$ENDREGION}
+
+
+{$REGION 'TTestMultiSet'}
+
+procedure TTestMultiSet.SetUp;
+begin
+  inherited;
+  SUT := TCollections.CreateMultiSet<string>;
+end;
+
+procedure TTestMultiSet.TestElements;
+var
+  elements: IReadOnlyCollection<string>;
+begin
+  SUT.AddRange(['b', 'c', 'a', 'b']);
+  elements := SUT.Elements;
+  CheckTrue(elements.EqualsTo(['b', 'c', 'a']));
+  SUT.Add('d');
+  CheckTrue(elements.Contains('d'));
+end;
+
+procedure TTestMultiSet.TestEntries;
+var
+  entries: TArray<TPair<string,Integer>>;
+begin
+  SUT.AddRange(['b', 'c', 'a', 'b', 'a', 'b']);
+  entries := SUT.Entries.ToArray;
+  CheckEquals(3, Length(entries));
+  CheckEquals('b', entries[0].Key);
+  CheckEquals('c', entries[1].Key);
+  CheckEquals('a', entries[2].Key);
+  CheckEquals(3, entries[0].Value);
+  CheckEquals(1, entries[1].Value);
+  CheckEquals(2, entries[2].Value);
+end;
+
+procedure TTestMultiSet.TestToArray;
+var
+  items: TArray<string>;
+begin
+  SUT.AddRange(['a', 'b', 'a', 'a']);
+
+  items := SUT.ToArray;
+  CheckEquals(4, Length(items));
+  CheckEquals('a', items[0]);
+  CheckEquals('a', items[1]);
+  CheckEquals('a', items[2]);
+  CheckEquals('b', items[3]);
+end;
+
+{$ENDREGION}
+
+
+{$REGION 'TTestSortedMultiSet'}
+
+function TTestSortedMultiSet.IsSorted: Boolean;
+begin
+  Result := True;
+end;
+
+procedure TTestSortedMultiSet.SetUp;
+begin
+  inherited;
+  SUT := TCollections.CreateSortedMultiSet<string>;
+end;
+
+procedure TTestSortedMultiSet.TestElements;
+var
+  elements: IReadOnlyCollection<string>;
+begin
+  SUT.AddRange(['b', 'c', 'a', 'b']);
+  elements := SUT.Elements;
+  CheckTrue(elements.EqualsTo(['a', 'b', 'c']));
+
+  SUT.Add('d');
+  CheckTrue(elements.Contains('d'));
+end;
+
+procedure TTestSortedMultiSet.TestEntries;
+var
+  entries: TArray<TPair<string,Integer>>;
+begin
+  SUT.AddRange(['b', 'c', 'a', 'b', 'a', 'b']);
+  entries := SUT.Entries.ToArray;
+  CheckEquals(3, Length(entries));
+  CheckEquals('a', entries[0].Key);
+  CheckEquals('b', entries[1].Key);
+  CheckEquals('c', entries[2].Key);
+  CheckEquals(2, entries[0].Value);
+  CheckEquals(3, entries[1].Value);
+  CheckEquals(1, entries[2].Value);
+end;
+
+procedure TTestSortedMultiSet.TestToArray;
+var
+  items: TArray<string>;
+begin
+  SUT.AddRange(['b', 'c', 'a', 'a']);
+
+  items := SUT.ToArray;
+  CheckEquals(4, Length(items));
+  CheckEquals('a', items[0]);
+  CheckEquals('a', items[1]);
+  CheckEquals('b', items[2]);
+  CheckEquals('c', items[3]);
 end;
 
 {$ENDREGION}

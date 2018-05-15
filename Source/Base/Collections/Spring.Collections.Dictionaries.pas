@@ -29,7 +29,6 @@ unit Spring.Collections.Dictionaries;
 interface
 
 uses
-  Classes,
   Generics.Collections,
   Generics.Defaults,
   Spring,
@@ -156,6 +155,25 @@ type
         constructor Create(const source: TDictionary<TKey, TValue>);
         destructor Destroy; override;
       end;
+  public
+    type
+      TDictionaryItem = record
+      private
+        {$IFDEF AUTOREFCOUNT}[Unsafe]{$ENDIF}
+        fSource: TDictionary<TKey,TValue>;
+        fHashCode: Integer;
+        fBucketIndex: Integer;
+        fItemIndex: Integer;
+        {$IFDEF ASSERTIONS_ON}
+        fVersion: Integer;
+        {$ENDIF}
+        function GetValue: TValue;
+        procedure SetValue(const value: TValue);
+      public
+        procedure Add(const key: TKey; const value: TValue);
+        procedure Remove;
+        property Value: TValue read GetValue write SetValue;
+      end;
   {$ENDREGION}
   private
     fBuckets: TArray<Integer>;
@@ -214,6 +232,8 @@ type
 
     destructor Destroy; override;
 
+    function FindItem(const key: TKey; out item: TDictionaryItem): Boolean;
+
   {$REGION 'Implements IEnumerable<TPair<TKey, TValue>>'}
     function GetEnumerator: IEnumerator<TKeyValuePair>;
     function Contains(const value: TKeyValuePair;
@@ -249,6 +269,7 @@ type
     function AsReadOnly: IReadOnlyDictionary<TKey, TValue>;
 
     property Items[const key: TKey]: TValue read GetItem write SetItem; default;
+    property KeyComparer: IEqualityComparer<TKey> read fKeyComparer;
   {$ENDREGION}
   end;
 
@@ -1002,6 +1023,16 @@ begin
   end;
 end;
 
+function TDictionary<TKey, TValue>.FindItem(const key: TKey; out item: TDictionaryItem): Boolean;
+begin
+  item.fSource := Self;
+  item.fHashCode := Hash(key);
+  Result := Find(key, item.fHashCode, item.fBucketIndex, item.fItemIndex);
+{$IFDEF ASSERTIONS_ON}
+  item.fVersion := fVersion;
+{$ENDIF}
+end;
+
 function TDictionary<TKey, TValue>.Hash(const key: TKey): Integer;
 begin
   Result := fKeyComparer.GetHashCode(key) and not RemovedFlag;
@@ -1333,7 +1364,6 @@ var
 begin
   hashCode := Hash(key);
   if Find(key, hashCode, bucketIndex, itemIndex) then
-    // modify existing value
     DoSetValue(itemIndex, value)
   else
   begin
@@ -1624,6 +1654,47 @@ begin
     Exit(True);
   end;
   Result := False;
+end;
+
+{$ENDREGION}
+
+
+{$REGION 'TDictionary<TKey, TValue>.TDictionaryItem'}
+
+function TDictionary<TKey, TValue>.TDictionaryItem.GetValue: TValue;
+begin
+  Result := fSource.fItems[fItemIndex].Value
+end;
+
+procedure TDictionary<TKey, TValue>.TDictionaryItem.Add(const key: TKey; const value: TValue);
+begin
+{$IFDEF ASSERTIONS_ON}
+  Assert(fVersion = fSource.fVersion);
+  Assert(fHashCode = fSource.Hash(key));
+{$ENDIF}
+  if fSource.fItemCount = fSource.Capacity then
+  begin
+    fSource.Grow;
+    // rehash invalidates the indices
+    fSource.Find(key, fHashCode, fBucketIndex, fItemIndex);
+  end;
+  fSource.DoAdd(fHashCode, fBucketIndex, fItemIndex, key, value);
+end;
+
+procedure TDictionary<TKey, TValue>.TDictionaryItem.Remove;
+begin
+{$IFDEF ASSERTIONS_ON}
+  Assert(fVersion = fSource.fVersion);
+{$ENDIF}
+  fSource.DoRemove(fBucketIndex, fItemIndex, caRemoved);
+end;
+
+procedure TDictionary<TKey, TValue>.TDictionaryItem.SetValue(const value: TValue);
+begin
+{$IFDEF ASSERTIONS_ON}
+  Assert(fVersion = fSource.fVersion);
+{$ENDIF}
+  fSource.DoSetValue(fItemIndex, value);
 end;
 
 {$ENDREGION}

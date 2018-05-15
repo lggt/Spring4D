@@ -495,6 +495,7 @@ type
     procedure TrimExcess;
 
     property Capacity: Integer read GetCapacity write SetCapacity;
+    property Comparer: IComparer<TKey> read fComparer;
     property Count: Integer read GetCount;
     property Root: PNode read GetRoot;
   end;
@@ -1550,7 +1551,9 @@ end;
 
 procedure TRedBlackTree<T>.SetCapacity(value: Integer);
 begin
+  Guard.CheckRange(value >= fCount, 'capacity');
 
+  fStorage.Capacity := value;
 end;
 
 function TRedBlackTree<T>.ToArray: TArray<T>;

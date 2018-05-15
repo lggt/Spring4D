@@ -39,9 +39,9 @@ type
   /// <summary>
   ///   The abstract base class for all set implementations.
   /// </summary>
-  TSetBase<T> = class abstract(TCollectionBase<T>)
+  TAbstractSet<T> = class abstract(TCollectionBase<T>)
   protected
-    class function CreateSet: ISet<T>; virtual; abstract;
+    function CreateSet: ISet<T>; virtual; abstract;
   public
     procedure ExceptWith(const other: IEnumerable<T>);
     procedure IntersectWith(const other: IEnumerable<T>);
@@ -65,7 +65,7 @@ type
   /// <typeparam name="T">
   ///   The type of elements in the hash set.
   /// </typeparam>
-  THashSet<T> = class(TSetBase<T>, IEnumerable<T>,
+  THashSet<T> = class(TAbstractSet<T>, IEnumerable<T>,
     IReadOnlyCollection<T>, ICollection<T>, ISet<T>)
   private
   {$REGION 'Nested Types'}
@@ -111,7 +111,7 @@ type
     procedure DoRemove(bucketIndex, itemIndex: Integer;
       action: TCollectionChangedAction);
   protected
-    class function CreateSet: ISet<T>; override;
+    function CreateSet: ISet<T>; override;
     function TryGetElementAt(out item: T; index: Integer): Boolean; override;
     property Count: Integer read fCount;
     property Capacity: Integer read GetCapacity;
@@ -142,7 +142,7 @@ type
   {$ENDREGION}
   end;
 
-  TSortedSet<T> = class(TSetBase<T>, IEnumerable<T>,
+  TSortedSet<T> = class(TAbstractSet<T>, IEnumerable<T>,
     IReadOnlyCollection<T>, ICollection<T>, ISet<T>)
   private
   {$REGION 'Nested Types'}
@@ -171,7 +171,7 @@ type
     procedure SetCapacity(value: Integer);
   {$ENDREGION}
   protected
-    class function CreateSet: ISet<T>; override;
+    function CreateSet: ISet<T>; override;
   public
     constructor Create; overload; override;
     constructor Create(const comparer: IComparer<T>); overload;
@@ -206,9 +206,9 @@ uses
   Spring.ResourceStrings;
 
 
-{$REGION 'TSetBase<T>'}
+{$REGION 'TAbstractSet<T>'}
 
-procedure TSetBase<T>.ExceptWith(const other: IEnumerable<T>);
+procedure TAbstractSet<T>.ExceptWith(const other: IEnumerable<T>);
 var
   item: T;
 begin
@@ -220,7 +220,7 @@ begin
     ICollection<T>(this).Remove(item);
 end;
 
-procedure TSetBase<T>.IntersectWith(const other: IEnumerable<T>);
+procedure TAbstractSet<T>.IntersectWith(const other: IEnumerable<T>);
 var
   item: T;
   list: IList<T>;
@@ -238,7 +238,7 @@ begin
     ICollection<T>(this).Remove(item);
 end;
 
-function TSetBase<T>.IsSubsetOf(const other: IEnumerable<T>): Boolean;
+function TAbstractSet<T>.IsSubsetOf(const other: IEnumerable<T>): Boolean;
 var
   item: T;
 begin
@@ -253,7 +253,7 @@ begin
   Result := True;
 end;
 
-function TSetBase<T>.IsSupersetOf(const other: IEnumerable<T>): Boolean;
+function TAbstractSet<T>.IsSupersetOf(const other: IEnumerable<T>): Boolean;
 var
   item: T;
 begin
@@ -262,13 +262,13 @@ begin
 {$ENDIF}
 
   for item in other do
-    if not Contains(item) then
+    if not this.Contains(item) then
       Exit(False);
 
   Result := True;
 end;
 
-function TSetBase<T>.Overlaps(const other: IEnumerable<T>): Boolean;
+function TAbstractSet<T>.Overlaps(const other: IEnumerable<T>): Boolean;
 var
   item: T;
 begin
@@ -277,13 +277,13 @@ begin
 {$ENDIF}
 
   for item in other do
-    if Contains(item) then
+    if this.Contains(item) then
       Exit(True);
 
   Result := False;
 end;
 
-function TSetBase<T>.SetEquals(const other: IEnumerable<T>): Boolean;
+function TAbstractSet<T>.SetEquals(const other: IEnumerable<T>): Boolean;
 var
   item: T;
   localSet: ISet<T>;
@@ -297,7 +297,7 @@ begin
   for item in other do
   begin
     localSet.Add(item);
-    if not Contains(item) then
+    if not this.Contains(item) then
       Exit(False);
   end;
 
@@ -308,7 +308,7 @@ begin
   Result := True;
 end;
 
-procedure TSetBase<T>.UnionWith(const other: IEnumerable<T>);
+procedure TAbstractSet<T>.UnionWith(const other: IEnumerable<T>);
 var
   item: T;
 begin
@@ -366,9 +366,9 @@ begin
   inherited Destroy;
 end;
 
-class function THashSet<T>.CreateSet: ISet<T>;
+function THashSet<T>.CreateSet: ISet<T>;
 begin
-  Result := THashSet<T>.Create;
+  Result := THashSet<T>.Create(fEqualityComparer);
 end;
 
 procedure THashSet<T>.SetCapacity(value: Integer);
@@ -706,9 +706,9 @@ begin
   fTree := TRedBlackTree<T>.Create(comparer);
 end;
 
-class function TSortedSet<T>.CreateSet: ISet<T>;
+function TSortedSet<T>.CreateSet: ISet<T>;
 begin
-  Result := TSortedSet<T>.Create;
+  Result := TSortedSet<T>.Create(Comparer);
 end;
 
 destructor TSortedSet<T>.Destroy;
