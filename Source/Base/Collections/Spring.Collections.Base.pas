@@ -1972,9 +1972,9 @@ procedure TCircularArrayBuffer<T>.AddToHead(const item: T);
 var
   index: Integer;
 begin
-  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_ON}{$Q-}{$ENDIF}
+  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_OFF}{$Q-}{$ENDIF}
   Inc(fVersion);
-  {$IFDEF OVERFLOWCHECKS_ON}{$Q+}{$ENDIF}
+  {$IFDEF OVERFLOWCHECKS_OFF}{$UNDEF OVERFLOWCHECKS_OFF}{$Q+}{$ENDIF}
   Inc(fCount);
 
   index := fHead;
@@ -1991,9 +1991,9 @@ procedure TCircularArrayBuffer<T>.AddToTail(const item: T);
 var
   index: Integer;
 begin
-  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_ON}{$Q-}{$ENDIF}
+  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_OFF}{$Q-}{$ENDIF}
   Inc(fVersion);
-  {$IFDEF OVERFLOWCHECKS_ON}{$Q+}{$ENDIF}
+  {$IFDEF OVERFLOWCHECKS_OFF}{$UNDEF OVERFLOWCHECKS_OFF}{$Q+}{$ENDIF}
   Inc(fCount);
 
   index := fTail;
@@ -2010,9 +2010,9 @@ var
   index: Integer;
   item: PT;
 begin
-  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_ON}{$Q-}{$ENDIF}
+  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_OFF}{$Q-}{$ENDIF}
   Inc(fVersion);
-  {$IFDEF OVERFLOWCHECKS_ON}{$Q+}{$ENDIF}
+  {$IFDEF OVERFLOWCHECKS_OFF}{$UNDEF OVERFLOWCHECKS_OFF}{$Q+}{$ENDIF}
   Dec(fCount);
 
   index := fHead;
@@ -2033,9 +2033,9 @@ var
   index: Integer;
   item: PT;
 begin
-  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_ON}{$Q-}{$ENDIF}
+  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_OFF}{$Q-}{$ENDIF}
   Inc(fVersion);
-  {$IFDEF OVERFLOWCHECKS_ON}{$Q+}{$ENDIF}
+  {$IFDEF OVERFLOWCHECKS_OFF}{$UNDEF OVERFLOWCHECKS_OFF}{$Q+}{$ENDIF}
   Dec(fCount);
 
   index := fTail;

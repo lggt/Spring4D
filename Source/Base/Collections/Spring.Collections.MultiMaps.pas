@@ -32,8 +32,7 @@ uses
   Generics.Defaults,
   Spring,
   Spring.Collections,
-  Spring.Collections.Base,
-  Spring.Collections.Dictionaries;
+  Spring.Collections.Base;
 
 {$IFDEF DELPHIXE6_UP}{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}{$ENDIF}
 
@@ -336,7 +335,7 @@ function TMultiMapBase<TKey, TValue>.CreateDictionary(
   const comparer: IEqualityComparer<TKey>;
   ownerships: TDictionaryOwnerships): IDictionary<TKey, ICollection<TValue>>;
 begin
-  Result := TCollections.CreateDictionary<TKey, ICollection<TValue>>(comparer, ownerships);
+  IDictionary<TKey, IInterface>(Result) := TCollections.CreateDictionary<TKey, IInterface>(comparer, ownerships);
   Result.OnKeyChanged.Add(DoKeyChanged);
   Result.OnValueChanged.Add(DoValuesChanged);
 end;

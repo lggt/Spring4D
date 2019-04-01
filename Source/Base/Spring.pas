@@ -3476,9 +3476,9 @@ end;
 
 procedure IncUnchecked(var i: Integer; const n: Integer = 1); inline;
 begin
-  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_ON}{$Q-}{$ENDIF}
+  {$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_OFF}{$Q-}{$ENDIF}
   Inc(i, n);
-  {$IFDEF OVERFLOWCHECKS_ON}{$Q+}{$ENDIF}
+  {$IFDEF OVERFLOWCHECKS_OFF}{$UNDEF OVERFLOWCHECKS_OFF}{$Q+}{$ENDIF}
 end;
 
 function IsPowerOf2(value: Integer): Boolean;
@@ -3487,13 +3487,37 @@ begin
 end;
 
 function NextPowerOf2(value: Integer): Integer;
-begin
-  Result := 1;
-  while Result <= value do
-    Result := Result shl 1;
+{$IFDEF MSWINDOWS}
+asm
+  cmp value, 0
+  jle @negative
+  bsr ecx, value
+  add ecx, 1
+  mov eax, 1
+  shl eax, cl
+  ret
+@negative:
+  mov eax, 1
 end;
+{$ELSE}
+begin
+  if value > 0 then
+  begin
+    Dec(value);
+    value := value or (value shr 1);
+    value := value or (value shr 2);
+    value := value or (value shr 4);
+    value := value or (value shr 8);
+    value := value or (value shr 16);
+    Inc(value);
+    Result := value;
+  end
+  else
+    Result := 1;
+end;
+{$ENDIF}
 
-{$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_ON}{$Q-}{$ENDIF}
+{$IFOPT Q+}{$DEFINE OVERFLOWCHECKS_OFF}{$Q-}{$ENDIF}
 {$IFOPT R+}{$DEFINE RANGECHECKS_ON}{$R-}{$ENDIF}
 function DynArrayLength(const A: Pointer): NativeInt;
 begin
@@ -3507,7 +3531,7 @@ begin
   Result := DynArrayLength(A) - 1;
 end;
 {$IFDEF RANGECHECKS_ON}{$R+}{$ENDIF}
-{$IFDEF OVERFLOWCHECKS_ON}{$Q+}{$ENDIF}
+{$IFDEF OVERFLOWCHECKS_OFF}{$UNDEF OVERFLOWCHECKS_OFF}{$Q+}{$ENDIF}
 
 procedure FreeObject(const item);
 begin
